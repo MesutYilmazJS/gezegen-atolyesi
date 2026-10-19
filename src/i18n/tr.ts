@@ -414,6 +414,20 @@ export const tr = {
 
   offlineReady: 'Oyun artık internetsiz de açılabilir',
   more: 'Daha fazla',
+  menuExplore: 'Keşfet',
+  menuProgress: 'İlerleme',
+  menuTools: 'Araçlar',
+  menuDesc: {
+    missions: 'Hedefli bölümler, yeni ayarların kilidini açar',
+    free: 'Tüm ayarlar açık, sınır yok',
+    real: 'Güneş Sistemi ve ötegezegenler',
+    surface: 'Gezegenin yüzeyinde dur, gökyüzüne bak',
+    badges: 'Kazandığın madalyalar',
+    encyclopedia: 'Keşfettiğin kavramlar',
+    photo: 'Arayüzü gizle, duvar kâğıdı indir',
+    options: 'Grafik, ses, tema ve kısayollar',
+  },
+  renameHint: 'Gezegenin adını değiştirmek için tıkla',
   unlockAll: 'Tüm kilitleri aç',
   newPlanetNamed: 'Yeni gezegen',
 

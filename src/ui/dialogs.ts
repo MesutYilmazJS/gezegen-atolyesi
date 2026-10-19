@@ -210,41 +210,89 @@ export function openRealPlanets(progress: Progress, onPick: (id: RealPlanetId) =
 export interface MenuItem {
   icon: IconName;
   label: string;
+  desc?: string;
+  /** Klavye kısayolu */
+  key?: string;
+  /** Sağda küçük rozet (ör. 2/8) */
+  badge?: string;
   action: () => void;
 }
 
-export function openMenu(anchor: HTMLElement, items: MenuItem[]) {
-  document.querySelector('.menu-pop')?.remove();
+export interface MenuGroup {
+  title: string;
+  items: MenuItem[];
+}
+
+export function openMenu(anchor: HTMLElement, groups: MenuGroup[]) {
+  const existing = document.querySelector('.menu-pop');
+  if (existing) {
+    existing.remove();
+    anchor.setAttribute('aria-expanded', 'false');
+    return;
+  }
+  const buttons: HTMLButtonElement[] = [];
+  const close = () => {
+    pop.remove();
+    anchor.setAttribute('aria-expanded', 'false');
+    document.removeEventListener('pointerdown', onOutside, true);
+    document.removeEventListener('keydown', onKey, true);
+  };
   const pop = h(
     'div',
     { class: 'menu-pop panel', role: 'menu' },
-    ...items.map((it) =>
+    ...groups.map((g) =>
       h(
-        'button',
-        {
-          type: 'button',
-          role: 'menuitem',
-          class: 'menu-item',
-          onclick: (() => {
-            pop.remove();
-            it.action();
-          }) as EventListener,
-        },
-        icon(it.icon, 18),
-        it.label,
+        'div',
+        { class: 'menu-group', role: 'group', 'aria-label': g.title },
+        h('div', { class: 'menu-group-title' }, g.title),
+        ...g.items.map((it) => {
+          const b = h(
+            'button',
+            {
+              type: 'button',
+              role: 'menuitem',
+              class: 'menu-item',
+              onclick: (() => {
+                close();
+                it.action();
+              }) as EventListener,
+            },
+            h('span', { class: 'menu-icon' }, icon(it.icon, 18)),
+            h('span', { class: 'menu-text' }, h('span', { class: 'menu-label' }, it.label), it.desc ? h('span', { class: 'menu-desc' }, it.desc) : null),
+            it.badge ? h('span', { class: 'menu-badge' }, it.badge) : null,
+            it.key ? h('kbd', { class: 'menu-key' }, it.key) : null,
+          );
+          buttons.push(b);
+          return b;
+        }),
       ),
     ),
   );
   document.body.append(pop);
+  anchor.setAttribute('aria-expanded', 'true');
   const r = anchor.getBoundingClientRect();
-  pop.style.top = `${r.bottom + 8}px`;
+  pop.style.top = `${r.bottom + 10}px`;
   pop.style.right = `${Math.max(12, window.innerWidth - r.right)}px`;
-  const close = (e: Event) => {
-    if (!pop.contains(e.target as Node) && e.target !== anchor) {
-      pop.remove();
-      document.removeEventListener('pointerdown', close, true);
+
+  // Ok tuşlarıyla gezinme, Esc ile kapatma
+  const onKey = (e: KeyboardEvent) => {
+    const i = buttons.indexOf(document.activeElement as HTMLButtonElement);
+    if (e.key === 'Escape') {
+      e.stopPropagation();
+      close();
+      anchor.focus();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      buttons[(i + 1) % buttons.length].focus();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      buttons[(i - 1 + buttons.length) % buttons.length].focus();
     }
   };
-  setTimeout(() => document.addEventListener('pointerdown', close, true));
-  (pop.querySelector('button') as HTMLButtonElement | null)?.focus();
+  const onOutside = (e: Event) => {
+    if (!pop.contains(e.target as Node) && !anchor.contains(e.target as Node)) close();
+  };
+  setTimeout(() => document.addEventListener('pointerdown', onOutside, true));
+  document.addEventListener('keydown', onKey, true);
+  buttons[0]?.focus();
 }

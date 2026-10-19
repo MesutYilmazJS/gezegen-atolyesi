@@ -1,7 +1,7 @@
 import './style.css';
 import { SoundEngine } from './audio/sound';
 import { BADGES } from './game/badges';
-import { INFO_TO_ENTRY, discoveredBy } from './game/encyclopedia';
+import { ENTRY_IDS, INFO_TO_ENTRY, discoveredBy } from './game/encyclopedia';
 import { MISSIONS, MissionId, lockedBy } from './game/missions';
 import { loadProgress, saveProgress } from './game/progress';
 import { REAL_PLANETS, RealPlanetId } from './game/realPlanets';
@@ -74,7 +74,12 @@ $('#btn-random').append(icon('dice'), label(t.random));
 $('#btn-save').append(icon('save'), label(t.save));
 $('#btn-album').append(icon('images'), label(t.album));
 $('#btn-more').append(icon('menu', 20));
-for (const id of ['#btn-random', '#btn-save', '#btn-album']) $(id).setAttribute('title', $(id).textContent ?? '');
+$('#btn-random').title = `${t.random} (R)`;
+$('#btn-save').title = `${t.save} (S)`;
+$('#btn-album').title = `${t.album} (A)`;
+$('#name-icon').append(icon('pencil', 14));
+$('.name-field').setAttribute('title', t.renameHint);
+const nameScore = $('#name-score');
 $('#btn-more').setAttribute('aria-label', t.more);
 $('#btn-random').addEventListener('click', randomize);
 $('#btn-save').addEventListener('click', save);
@@ -87,7 +92,12 @@ $('#app-title').textContent = t.appName;
 const modeSwitch = $('#mode-switch');
 for (const m of ['free', 'missions'] as const) {
   modeSwitch.append(
-    h('button', { type: 'button', class: 'mode-btn', 'data-mode': m, onclick: (() => setMode(m)) as EventListener }, t.modes[m]),
+    h(
+      'button',
+      { type: 'button', class: 'mode-btn', 'data-mode': m, onclick: (() => setMode(m)) as EventListener },
+      icon(m === 'free' ? 'palette' : 'target', 15),
+      h('span', {}, t.modes[m]),
+    ),
   );
 }
 
@@ -149,6 +159,10 @@ function render(instant = false) {
   timeline.setEvents(settings.events);
   scheduleCurve();
   if (document.activeElement !== nameInput) nameInput.value = settings.name;
+  // Başlıkta adın yanında küçük yaşanabilirlik rozeti
+  nameScore.textContent = settings.kind === 'gas' ? '—' : String(report.habitability);
+  nameScore.title = `${t.habitability}: ${report.habitability}`;
+  nameScore.dataset.level = report.habitability >= 80 ? 'great' : report.habitability >= 55 ? 'good' : report.habitability >= 30 ? 'fair' : 'poor';
   const v = report.visual;
   sound.setAmbience(v.oceanFill * Math.min(1, settings.water * 1.4) * (1 - v.seaIce), Math.max(settings.wind, v.storms * 0.6) * (report.pressure > 0.01 ? 1 : 0.1), Math.max(v.lava, v.molten));
   evaluateProgress();
@@ -357,16 +371,39 @@ function realPlanets() {
 }
 
 function openMoreMenu(anchor: HTMLElement) {
+  const d = t.menuDesc;
   openMenu(anchor, [
-    prefs.mode === 'missions'
-      ? { icon: 'palette', label: t.modes.free, action: () => setMode('free') }
-      : { icon: 'target', label: t.missionsTitle, action: missions },
-    { icon: 'globe', label: t.realTitle, action: realPlanets },
-    { icon: 'award', label: t.badgesTitle, action: () => openBadges(progress) },
-    { icon: 'book', label: t.encyclopedia, action: () => openEncyclopedia(progress) },
-    { icon: 'mountain', label: t.surfaceView, action: enterSurface },
-    { icon: 'camera', label: t.photoMode, action: enterPhotoMode },
-    { icon: 'settings', label: t.options, action: options },
+    {
+      title: t.menuExplore,
+      items: [
+        prefs.mode === 'missions'
+          ? { icon: 'palette', label: t.modes.free, desc: d.free, action: () => setMode('free') }
+          : {
+              icon: 'target',
+              label: t.missionsTitle,
+              desc: d.missions,
+              key: 'G',
+              badge: `${progress.completedMissions.length}/${MISSIONS.length}`,
+              action: missions,
+            },
+        { icon: 'globe', label: t.realTitle, desc: d.real, badge: `${progress.realViewed.length}/${REAL_PLANETS.length}`, action: realPlanets },
+        { icon: 'mountain', label: t.surfaceView, desc: d.surface, key: 'Y', action: enterSurface },
+      ],
+    },
+    {
+      title: t.menuProgress,
+      items: [
+        { icon: 'award', label: t.badgesTitle, desc: d.badges, badge: `${progress.badges.length}/${BADGES.length}`, action: () => openBadges(progress) },
+        { icon: 'book', label: t.encyclopedia, desc: d.encyclopedia, badge: `${progress.discovered.length}/${ENTRY_IDS.length}`, action: () => openEncyclopedia(progress) },
+      ],
+    },
+    {
+      title: t.menuTools,
+      items: [
+        { icon: 'camera', label: t.photoMode, desc: d.photo, key: 'P', action: enterPhotoMode },
+        { icon: 'settings', label: t.options, desc: d.options, action: options },
+      ],
+    },
   ]);
 }
 

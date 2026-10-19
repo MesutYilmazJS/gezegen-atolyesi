@@ -16,18 +16,25 @@
   <body>
     <div id="viewport" aria-label="3B gezegen görünümü"></div>
 
-    <header class="topbar">
+    <header class="topbar panel">
       <div class="brand">
-        <img src="/icons/icon-192.png" alt="" width="28" height="28" />
+        <img src="/icons/icon-192.png" alt="" width="30" height="30" />
         <span id="app-title"></span>
       </div>
-      <input id="planet-name" class="name-input" maxlength="40" autocomplete="off" spellcheck="false" />
+      <span class="topbar-divider" aria-hidden="true"></span>
+      <label class="name-field" for="planet-name">
+        <span id="name-icon" class="name-icon"></span>
+        <input id="planet-name" class="name-input" maxlength="40" autocomplete="off" spellcheck="false" />
+        <span id="name-score" class="name-score" title=""></span>
+      </label>
       <div id="mode-switch" class="mode-switch" role="group"></div>
       <div class="actions">
-        <button id="btn-random" class="btn" type="button"></button>
-        <button id="btn-save" class="btn" type="button"></button>
-        <button id="btn-album" class="btn" type="button"></button>
-        <button id="btn-more" class="icon-btn" type="button"></button>
+        <div class="toolbar" role="toolbar">
+          <button id="btn-random" class="tool-btn" type="button"></button>
+          <button id="btn-save" class="tool-btn" type="button"></button>
+          <button id="btn-album" class="tool-btn" type="button"></button>
+        </div>
+        <button id="btn-more" class="icon-btn menu-btn" type="button" aria-haspopup="menu" aria-expanded="false"></button>
       </div>
     </header>
 
