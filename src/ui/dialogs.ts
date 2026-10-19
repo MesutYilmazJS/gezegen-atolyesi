@@ -6,116 +6,200 @@ import { REAL_PLANETS, RealPlanetId } from '../game/realPlanets';
 import { t } from '../i18n';
 import type { QualityMode } from '../render/engine';
 import { Prefs, SavedPlanet, deleteFromAlbum, loadAlbum } from '../state/storage';
-import { h, modal, toast } from './dom';
+import { h, modal, progressPill, toast } from './dom';
 import { IconName, icon } from './icons';
 
+function scoreLevel(score: number): string {
+  return score >= 80 ? 'great' : score >= 55 ? 'good' : score >= 30 ? 'fair' : 'poor';
+}
+
+// --- Albüm ---
 export function openAlbum(onLoad: (p: SavedPlanet) => void) {
   const grid = h('div', { class: 'album-grid' });
-  const { close } = modal(t.albumTitle, grid, t.close);
+  const count = h('span', { class: 'count-chip' });
+  const { close } = modal(t.albumTitle, grid, t.close, { icon: 'images', subtitle: t.albumSub, extra: count, size: 'lg' });
 
   const render = () => {
-    grid.innerHTML = '';
     const album = loadAlbum();
+    count.textContent = t.albumCount(album.length);
     if (!album.length) {
-      grid.append(h('p', { class: 'empty' }, t.albumEmpty));
+      grid.replaceChildren(
+        h('div', { class: 'empty-state' }, h('span', { class: 'empty-icon' }, icon('images', 28)), h('strong', {}, t.albumEmptyTitle), h('p', {}, t.albumEmpty)),
+      );
       return;
     }
-    for (const p of album) {
-      grid.append(
-        h(
+    grid.replaceChildren(
+      ...album.map((p) => {
+        let armed = false;
+        const del = h('button', { type: 'button', class: 'card-icon-btn danger', title: t.delete, 'aria-label': t.delete }, icon('trash', 16));
+        del.addEventListener('click', () => {
+          // İlk dokunuş onay ister, ikincisi siler
+          if (!armed) {
+            armed = true;
+            del.classList.add('armed');
+            del.replaceChildren(h('span', {}, t.confirmDeleteShort));
+            setTimeout(() => {
+              armed = false;
+              del.classList.remove('armed');
+              del.replaceChildren(icon('trash', 16));
+            }, 2500);
+            return;
+          }
+          deleteFromAlbum(p.id);
+          toast(t.deleted);
+          render();
+        });
+        return h(
           'article',
-          { class: 'card' },
-          h('img', { src: p.thumbnail, alt: p.name, loading: 'lazy' }),
-          h('div', { class: 'card-body' },
-            h('strong', {}, p.name),
-            h('span', { class: 'muted' }, new Date(p.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })),
-            h('span', { class: 'score' }, `${t.score}: ${p.score}`),
+          { class: 'album-card' },
+          h(
+            'button',
+            { type: 'button', class: 'album-thumb', title: t.load, onclick: (() => { onLoad(p); close(); }) as EventListener },
+            h('img', { src: p.thumbnail, alt: p.name }),
+            h('span', { class: 'score-badge', 'data-level': scoreLevel(p.score) }, String(p.score)),
           ),
-          h('div', { class: 'card-actions' },
-            h('button', { type: 'button', class: 'btn primary', onclick: (() => { onLoad(p); close(); }) as EventListener }, t.load),
-            h('button', {
-              type: 'button',
-              class: 'btn ghost',
-              onclick: (() => {
-                if (!confirm(t.confirmDelete)) return;
-                deleteFromAlbum(p.id);
-                toast(t.deleted);
-                render();
-              }) as EventListener,
-            }, t.delete),
+          h(
+            'div',
+            { class: 'album-body' },
+            h('div', { class: 'album-text' }, h('strong', {}, p.name), h('span', { class: 'muted small' }, new Date(p.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }))),
+            del,
           ),
-        ),
-      );
-    }
+          h('button', { type: 'button', class: 'btn primary block', onclick: (() => { onLoad(p); close(); }) as EventListener }, icon('download', 16), t.load),
+        );
+      }),
+    );
   };
   render();
 }
 
+// --- Seçenekler ---
 export function openOptions(prefs: Prefs, onChange: (p: Prefs) => void) {
+  const set = (patch: Partial<Prefs>) => {
+    prefs = { ...prefs, ...patch };
+    onChange(prefs);
+  };
+
+  /** Seçenek satırı: ikon, başlık, açıklama, sağda denetim */
+  const row = (iconName: IconName, label: string, desc: string, control: HTMLElement, forId?: string) =>
+    h(
+      'div',
+      { class: 'opt-row' },
+      h('span', { class: 'opt-icon' }, icon(iconName, 18)),
+      h('div', { class: 'opt-text' }, forId ? h('label', { for: forId }, label) : h('strong', {}, label), h('span', {}, desc)),
+      control,
+    );
+
+  const toggle = (id: string, key: 'batterySaver' | 'reduceMotion' | 'largeText' | 'music' | 'effects') => {
+    const input = h('input', {
+      type: 'checkbox',
+      class: 'switch',
+      id,
+      checked: prefs[key],
+      onchange: (() => set({ [key]: input.checked })) as EventListener,
+    });
+    return input;
+  };
+
+  /** Bölümlü düğme grubu (select yerine) */
+  const segmented = <T extends string>(label: string, values: [T, string][], current: T, onPick: (v: T) => void) => {
+    const wrap = h('div', { class: 'segmented', role: 'radiogroup', 'aria-label': label });
+    const buttons = values.map(([v, l]) =>
+      h(
+        'button',
+        {
+          type: 'button',
+          role: 'radio',
+          class: v === current ? 'active' : '',
+          'aria-checked': String(v === current),
+          onclick: (() => {
+            buttons.forEach((b, i) => {
+              b.classList.toggle('active', values[i][0] === v);
+              b.setAttribute('aria-checked', String(values[i][0] === v));
+            });
+            onPick(v);
+          }) as EventListener,
+        },
+        l,
+      ),
+    );
+    wrap.append(...buttons);
+    return wrap;
+  };
+
   const qualities: [QualityMode, string][] = [
     ['auto', t.qualityAuto],
     ['low', t.qualityLow],
     ['medium', t.qualityMedium],
     ['high', t.qualityHigh],
   ];
-  const select = h('select', {
-    id: 'opt-quality',
-    onchange: (() => onChange({ ...prefs, quality: select.value as Prefs['quality'] })) as EventListener,
-  }, ...qualities.map(([v, l]) => h('option', { value: v, selected: prefs.quality === v }, l)));
-
-  const toggle = (id: string, label: string, key: 'batterySaver' | 'reduceMotion' | 'largeText' | 'music' | 'effects') => {
-    const input = h('input', {
-      type: 'checkbox',
-      class: 'switch',
-      id,
-      checked: prefs[key],
-      onchange: (() => {
-        prefs = { ...prefs, [key]: input.checked };
-        onChange(prefs);
-      }) as EventListener,
-    });
-    return h('div', { class: 'control control-inline' }, h('label', { for: id }, label), input);
-  };
-
-  const theme = h('select', {
-    id: 'opt-theme',
-    onchange: (() => {
-      prefs = { ...prefs, theme: theme.value as Prefs['theme'] };
-      onChange(prefs);
-    }) as EventListener,
-  }, h('option', { value: 'dark', selected: prefs.theme === 'dark' }, t.themeDark), h('option', { value: 'light', selected: prefs.theme === 'light' }, t.themeLight));
-
-  select.addEventListener('change', () => {
-    prefs = { ...prefs, quality: select.value as Prefs['quality'] };
-  });
+  const group = (iconName: IconName, title: string, ...rows: HTMLElement[]) =>
+    h('section', { class: 'opt-group' }, h('h3', {}, icon(iconName, 16), title), ...rows);
 
   const content = h(
     'div',
     { class: 'options' },
-    h('div', { class: 'control control-inline' }, h('label', { for: 'opt-quality' }, t.quality), select),
-    toggle('opt-battery', t.batterySaver, 'batterySaver'),
-    toggle('opt-motion', t.reduceMotion, 'reduceMotion'),
-    toggle('opt-large', t.largeText, 'largeText'),
-    toggle('opt-music', t.music, 'music'),
-    toggle('opt-effects', t.effects, 'effects'),
-    h('div', { class: 'control control-inline' }, h('label', { for: 'opt-theme' }, t.theme), theme),
-    h('h3', {}, t.shortcuts),
-    h('dl', { class: 'shortcuts' }, ...t.shortcutList.flatMap(([k, v]) => [h('dt', {}, h('kbd', {}, k)), h('dd', {}, v)])),
+    group(
+      'monitor',
+      t.optDisplay,
+      h(
+        'div',
+        { class: 'opt-row stacked' },
+        h('span', { class: 'opt-icon' }, icon('gauge', 18)),
+        h('div', { class: 'opt-text' }, h('strong', {}, t.quality), h('span', {}, t.optDesc.quality)),
+        segmented(t.quality, qualities, prefs.quality, (v) => set({ quality: v })),
+      ),
+      row('zap', t.batterySaver, t.optDesc.batterySaver, toggle('opt-battery', 'batterySaver'), 'opt-battery'),
+      h(
+        'div',
+        { class: 'opt-row' },
+        h('span', { class: 'opt-icon' }, icon('palette', 18)),
+        h('div', { class: 'opt-text' }, h('strong', {}, t.theme), h('span', {}, t.optDesc.theme)),
+        segmented(
+          t.theme,
+          [
+            ['dark', t.themeDark],
+            ['light', t.themeLight],
+          ],
+          prefs.theme,
+          (v) => set({ theme: v }),
+        ),
+      ),
+    ),
+    group(
+      'volume',
+      t.optSound,
+      row('sparkles', t.music, t.optDesc.music, toggle('opt-music', 'music'), 'opt-music'),
+      row('volume', t.effects, t.optDesc.effects, toggle('opt-effects', 'effects'), 'opt-effects'),
+    ),
+    group(
+      'accessibility',
+      t.optAccess,
+      row('orbit', t.reduceMotion, t.optDesc.reduceMotion, toggle('opt-motion', 'reduceMotion'), 'opt-motion'),
+      row('book', t.largeText, t.optDesc.largeText, toggle('opt-large', 'largeText'), 'opt-large'),
+    ),
+    group(
+      'keyboard',
+      t.shortcuts,
+      h('div', { class: 'shortcut-grid' }, ...t.shortcutList.map(([k, v]) => h('div', { class: 'shortcut' }, h('kbd', {}, k), h('span', {}, v)))),
+    ),
   );
-  modal(t.optionsTitle, content, t.close);
+  modal(t.optionsTitle, content, t.close, { icon: 'settings', subtitle: t.optionsSub });
 }
 
 // --- Görevler ---
-
 export function openMissions(progress: Progress, onStart: (id: MissionId) => void) {
   const list = h('div', { class: 'mission-list' });
-  const { close } = modal(t.missionsTitle, list, t.close);
+  const { close } = modal(t.missionsTitle, list, t.close, {
+    icon: 'target',
+    subtitle: t.missionsSub,
+    extra: progressPill(progress.completedMissions.length, MISSIONS.length),
+  });
   MISSIONS.forEach((m, i) => {
     const txt = t.missions[m.id];
     const done = progress.completedMissions.includes(m.id);
     const available = isMissionAvailable(m.id, progress.completedMissions);
     const active = progress.activeMission === m.id;
-    const unlocks = m.unlocks.map(unlockLabel).filter(Boolean).join(', ');
+    const unlocks = m.unlocks.map(unlockLabel).filter(Boolean);
     list.append(
       h(
         'article',
@@ -124,15 +208,18 @@ export function openMissions(progress: Progress, onStart: (id: MissionId) => voi
         h(
           'div',
           { class: 'mission-body' },
-          h('strong', {}, txt.name),
-          h('p', {}, txt.goal),
+          h('div', { class: 'mission-title' }, h('strong', {}, txt.name), active ? h('span', { class: 'tag accent' }, t.missionActive) : done ? h('span', { class: 'tag good' }, t.missionDone) : null),
+          h('p', {}, available ? txt.goal : t.locked),
           available ? h('p', { class: 'muted small hint' }, icon('lightbulb', 14), txt.hint) : null,
-          unlocks ? h('p', { class: 'muted small' }, `${t.missionUnlocks}: ${unlocks}`) : null,
+          unlocks.length && available
+            ? h('div', { class: 'unlock-chips' }, h('span', { class: 'muted small' }, `${t.missionUnlocks}:`), ...unlocks.map((u) => h('span', { class: 'chip-mini' }, icon('lock', 12), u)))
+            : null,
         ),
         available
           ? h(
               'button',
-              { type: 'button', class: `btn ${active ? 'ghost' : 'primary'}`, onclick: (() => { onStart(m.id); close(); }) as EventListener },
+              { type: 'button', class: `btn ${active || done ? 'ghost' : 'primary'}`, onclick: (() => { onStart(m.id); close(); }) as EventListener },
+              icon(done || active ? 'restart' : 'play', 16),
               done || active ? t.missionRestart : t.missionStart,
             )
           : null,
@@ -155,16 +242,18 @@ function unlockLabel(key: string): string {
 // --- Rozetler ---
 export function openBadges(progress: Progress) {
   const grid = h('div', { class: 'badge-grid' });
-  modal(t.badgesTitle, grid, t.close);
+  const earned = BADGES.filter((b) => progress.badges.includes(b.id)).length;
+  modal(t.badgesTitle, grid, t.close, { icon: 'award', subtitle: t.badgesSub, extra: progressPill(earned, BADGES.length), size: 'lg' });
   for (const b of BADGES) {
     const got = progress.badges.includes(b.id);
     grid.append(
       h(
         'article',
         { class: `badge ${got ? 'earned' : ''}` },
-        h('img', { src: badgeIcon(b.id), alt: '', width: 96, height: 96 }),
+        h('div', { class: 'badge-img' }, h('img', { src: badgeIcon(b.id), alt: '', width: 96, height: 96 }), got ? null : h('span', { class: 'badge-lock' }, icon('lock', 16))),
         h('strong', {}, t.badges[b.id].name),
-        h('span', { class: 'muted small' }, got ? t.badges[b.id].desc : `${t.badgeLockedText} · ${t.badges[b.id].desc}`),
+        h('span', { class: 'muted small' }, t.badges[b.id].desc),
+        got ? h('span', { class: 'tag good' }, icon('check', 12), t.missionDone) : null,
       ),
     );
   }
@@ -172,35 +261,68 @@ export function openBadges(progress: Progress) {
 
 // --- Ansiklopedi ---
 export function openEncyclopedia(progress: Progress) {
-  const list = h('div', { class: 'encyclopedia' }, h('p', { class: 'muted' }, t.encyclopediaIntro));
-  modal(t.encyclopedia, list, t.close);
-  const count = ENTRY_IDS.filter((id) => progress.discovered.includes(id)).length;
-  list.append(h('p', { class: 'small' }, `${count} / ${ENTRY_IDS.length}`));
-  for (const id of ENTRY_IDS) {
-    const known = progress.discovered.includes(id);
-    const e = t.entries[id];
-    list.append(
-      known
-        ? h('details', { class: 'entry' }, h('summary', {}, e.title), h('p', {}, e.text))
-        : h('div', { class: 'entry locked' }, icon('lock', 14), t.encyclopediaLocked),
+  const known = ENTRY_IDS.filter((id) => progress.discovered.includes(id)).length;
+  const search = h('input', { type: 'search', class: 'search-input', placeholder: t.encyclopediaSearch, 'aria-label': t.encyclopediaSearch });
+  const list = h('div', { class: 'entry-list' });
+  const content = h(
+    'div',
+    { class: 'encyclopedia' },
+    h('p', { class: 'muted small' }, t.encyclopediaIntro),
+    h('label', { class: 'search-field' }, icon('search', 16), search),
+    list,
+  );
+  modal(t.encyclopedia, content, t.close, { icon: 'book', extra: progressPill(known, ENTRY_IDS.length) });
+
+  const render = () => {
+    const q = search.value.trim().toLocaleLowerCase('tr-TR');
+    const items = ENTRY_IDS.filter((id) => {
+      if (!q) return true;
+      const e = t.entries[id];
+      return progress.discovered.includes(id) && (e.title + e.text).toLocaleLowerCase('tr-TR').includes(q);
+    });
+    // Keşfedilenler önce
+    items.sort((a, b) => Number(progress.discovered.includes(b)) - Number(progress.discovered.includes(a)));
+    list.replaceChildren(
+      ...(items.length
+        ? items.map((id) => {
+            const e = t.entries[id];
+            return progress.discovered.includes(id)
+              ? h('details', { class: 'entry' }, h('summary', {}, icon('book', 16), h('span', {}, e.title), icon('chevron', 16)), h('p', {}, e.text))
+              : h('div', { class: 'entry locked' }, icon('lock', 14), h('span', {}, t.encyclopediaLocked));
+          })
+        : [h('p', { class: 'muted' }, t.encyclopediaNoResult)]),
     );
-  }
+  };
+  search.addEventListener('input', render);
+  render();
 }
 
 // --- Gerçek gezegenler ---
 export function openRealPlanets(progress: Progress, onPick: (id: RealPlanetId) => void) {
   const grid = h('div', { class: 'real-grid' });
-  const { close } = modal(t.realTitle, h('div', {}, h('p', { class: 'muted' }, t.realIntro), grid, h('p', { class: 'muted small' }, t.realNote)), t.close);
+  const seen = REAL_PLANETS.filter((p) => progress.realViewed.includes(p.id)).length;
+  const { close } = modal(t.realTitle, h('div', {}, grid, h('p', { class: 'muted small note' }, t.realNote)), t.close, {
+    icon: 'globe',
+    subtitle: t.realIntro,
+    extra: progressPill(seen, REAL_PLANETS.length),
+    size: 'lg',
+  });
   for (const p of REAL_PLANETS) {
     const info = t.realPlanets[p.id];
+    const wasSeen = progress.realViewed.includes(p.id);
     grid.append(
       h(
         'article',
-        { class: `real-card ${progress.realViewed.includes(p.id) ? 'seen' : ''}` },
-        h('div', { class: 'real-icon', 'aria-hidden': 'true', style: `--c:${p.color}` }),
-        h('strong', {}, info.name),
+        { class: `real-card ${wasSeen ? 'seen' : ''}` },
+        h(
+          'div',
+          { class: 'real-head' },
+          h('div', { class: 'real-icon', 'aria-hidden': 'true', style: `--c:${p.color}` }),
+          h('strong', {}, info.name),
+          wasSeen ? h('span', { class: 'tag good' }, icon('check', 12), t.realSeen) : null,
+        ),
         h('p', { class: 'small' }, info.fact),
-        h('button', { type: 'button', class: 'btn primary', onclick: (() => { onPick(p.id); close(); }) as EventListener }, t.realExplore),
+        h('button', { type: 'button', class: 'btn primary block', onclick: (() => { onPick(p.id); close(); }) as EventListener }, icon('globe', 16), t.realExplore),
       ),
     );
   }

@@ -1,4 +1,5 @@
 // Küçük DOM yardımcıları
+import { IconName, icon } from './icons';
 type Attrs = Record<string, string | number | boolean | EventListener | undefined>;
 
 export function h<K extends keyof HTMLElementTagNameMap>(
@@ -67,20 +68,61 @@ function showInfo(anchor: HTMLElement, title: string, text: string) {
   setTimeout(() => document.addEventListener('pointerdown', close, true));
 }
 
-export function modal(title: string, content: HTMLElement, closeLabel: string): { el: HTMLElement; close: () => void } {
+export interface ModalOptions {
+  icon?: IconName;
+  subtitle?: string;
+  /** Başlığın sağında ek içerik (ör. ilerleme) */
+  extra?: HTMLElement;
+  size?: 'sm' | 'md' | 'lg';
+}
+
+export function modal(
+  title: string,
+  content: HTMLElement,
+  closeLabel: string,
+  opts: ModalOptions = {},
+): { el: HTMLElement; close: () => void } {
+  const previous = document.activeElement as HTMLElement | null;
   const backdrop = h('div', { class: 'modal-backdrop' });
   const close = () => {
-    backdrop.remove();
+    backdrop.classList.add('closing');
     document.removeEventListener('keydown', onKey);
+    setTimeout(() => backdrop.remove(), 140);
+    previous?.focus?.();
   };
   const onKey = (e: KeyboardEvent) => {
     if (e.key === 'Escape') close();
+    // Odak pencerenin içinde kalsın
+    if (e.key === 'Tab') {
+      const items = Array.from(dialog.querySelectorAll<HTMLElement>('button, input, select, summary, [tabindex]:not([tabindex="-1"])')).filter(
+        (el) => !el.hasAttribute('disabled') && el.offsetParent !== null,
+      );
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
   };
+  const titleId = `modal-${Math.random().toString(36).slice(2, 8)}`;
+  const closeBtn = h('button', { class: 'modal-close', type: 'button', 'aria-label': closeLabel, onclick: close }, icon('x', 18));
   const dialog = h(
     'div',
-    { class: 'modal panel', role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
-    h('header', {}, h('h2', {}, title), h('button', { class: 'icon-btn', type: 'button', 'aria-label': closeLabel, onclick: close }, '✕')),
-    content,
+    { class: `modal panel ${opts.size ?? 'md'}`, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': titleId },
+    h(
+      'header',
+      { class: 'modal-head' },
+      opts.icon ? h('span', { class: 'modal-icon' }, icon(opts.icon, 20)) : null,
+      h('div', { class: 'modal-titles' }, h('h2', { id: titleId }, title), opts.subtitle ? h('p', { class: 'modal-sub' }, opts.subtitle) : null),
+      opts.extra ?? null,
+      closeBtn,
+    ),
+    h('div', { class: 'modal-body' }, content),
   );
   backdrop.append(dialog);
   backdrop.addEventListener('pointerdown', (e) => {
@@ -88,5 +130,16 @@ export function modal(title: string, content: HTMLElement, closeLabel: string): 
   });
   document.addEventListener('keydown', onKey);
   document.body.append(backdrop);
+  requestAnimationFrame(() => closeBtn.focus());
   return { el: dialog, close };
+}
+
+/** İnce ilerleme çubuğu + metin (modal başlıkları için) */
+export function progressPill(done: number, total: number): HTMLElement {
+  return h(
+    'div',
+    { class: 'progress-pill', title: `${done} / ${total}` },
+    h('span', { class: 'progress-pill-bar' }, h('span', { style: `width:${total ? (done / total) * 100 : 0}%` })),
+    h('strong', {}, `${done}/${total}`),
+  );
 }

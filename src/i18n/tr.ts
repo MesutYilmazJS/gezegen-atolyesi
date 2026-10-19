@@ -384,6 +384,30 @@ export const tr = {
   score: 'Puan',
   saveFailed: 'Kaydedilemedi: tarayıcı depolaması dolu ya da kapalı.',
 
+  // Pencere alt başlıkları ve ek metinler
+  albumSub: 'Kaydettiğin gezegenler bu tarayıcıda saklanır',
+  albumCount: (n: number) => `${n} gezegen`,
+  albumEmptyTitle: 'Albümün henüz boş',
+  confirmDeleteShort: 'Emin misin?',
+  optionsSub: 'Görüntü, ses ve erişilebilirlik',
+  optDisplay: 'Görüntü',
+  optSound: 'Ses',
+  optAccess: 'Erişilebilirlik',
+  optDesc: {
+    quality: 'Otomatik: akıcılık düşerse kalite kendiliğinden azalır',
+    batterySaver: 'Kare hızını 30\'a sınırlar, telefonda pili korur',
+    reduceMotion: 'Dönme ve bulut hareketlerini yavaşlatır',
+    largeText: 'Arayüz yazılarını büyütür',
+    theme: 'Panellerin renk teması',
+    music: 'Sakin, uzay temalı ortam müziği',
+    effects: 'Ayar sesleri ve gezegen ambiyansı',
+  },
+  missionsSub: 'Her görev yeni ayarların kilidini açar',
+  badgesSub: 'Oynadıkça kazandığın madalyalar',
+  encyclopediaSearch: 'Kavram ara…',
+  encyclopediaNoResult: 'Eşleşen kavram yok',
+  realSeen: 'İncelendi',
+
   // Seçenekler
   optionsTitle: 'Seçenekler',
   quality: 'Grafik kalitesi',
