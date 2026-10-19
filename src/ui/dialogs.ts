@@ -1,3 +1,8 @@
+import { BADGES, badgeIcon } from '../game/badges';
+import { ENTRY_IDS } from '../game/encyclopedia';
+import { MISSIONS, MissionId, isMissionAvailable } from '../game/missions';
+import type { Progress } from '../game/progress';
+import { REAL_PLANETS, RealPlanetId } from '../game/realPlanets';
 import { t } from '../i18n';
 import type { QualityMode } from '../render/engine';
 import { Prefs, SavedPlanet, deleteFromAlbum, loadAlbum } from '../state/storage';
@@ -57,7 +62,7 @@ export function openOptions(prefs: Prefs, onChange: (p: Prefs) => void) {
     onchange: (() => onChange({ ...prefs, quality: select.value as Prefs['quality'] })) as EventListener,
   }, ...qualities.map(([v, l]) => h('option', { value: v, selected: prefs.quality === v }, l)));
 
-  const toggle = (id: string, label: string, key: 'batterySaver' | 'reduceMotion' | 'largeText') => {
+  const toggle = (id: string, label: string, key: 'batterySaver' | 'reduceMotion' | 'largeText' | 'music' | 'effects') => {
     const input = h('input', {
       type: 'checkbox',
       class: 'switch',
@@ -90,9 +95,155 @@ export function openOptions(prefs: Prefs, onChange: (p: Prefs) => void) {
     toggle('opt-battery', t.batterySaver, 'batterySaver'),
     toggle('opt-motion', t.reduceMotion, 'reduceMotion'),
     toggle('opt-large', t.largeText, 'largeText'),
+    toggle('opt-music', t.music, 'music'),
+    toggle('opt-effects', t.effects, 'effects'),
     h('div', { class: 'control control-inline' }, h('label', { for: 'opt-theme' }, t.theme), theme),
     h('h3', {}, t.shortcuts),
     h('dl', { class: 'shortcuts' }, ...t.shortcutList.flatMap(([k, v]) => [h('dt', {}, h('kbd', {}, k)), h('dd', {}, v)])),
   );
   modal(t.optionsTitle, content, t.close);
+}
+
+// --- Görevler ---
+
+export function openMissions(progress: Progress, onStart: (id: MissionId) => void) {
+  const list = h('div', { class: 'mission-list' });
+  const { close } = modal(t.missionsTitle, list, t.close);
+  MISSIONS.forEach((m, i) => {
+    const txt = t.missions[m.id];
+    const done = progress.completedMissions.includes(m.id);
+    const available = isMissionAvailable(m.id, progress.completedMissions);
+    const active = progress.activeMission === m.id;
+    const unlocks = m.unlocks.map(unlockLabel).filter(Boolean).join(', ');
+    list.append(
+      h(
+        'article',
+        { class: `mission ${done ? 'done' : ''} ${available ? '' : 'locked'} ${active ? 'active' : ''}` },
+        h('div', { class: 'mission-num', 'aria-hidden': 'true' }, done ? '✓' : available ? String(i + 1) : '🔒'),
+        h(
+          'div',
+          { class: 'mission-body' },
+          h('strong', {}, txt.name),
+          h('p', {}, txt.goal),
+          available ? h('p', { class: 'muted small' }, `💡 ${txt.hint}`) : null,
+          unlocks ? h('p', { class: 'muted small' }, `${t.missionUnlocks}: ${unlocks}`) : null,
+        ),
+        available
+          ? h(
+              'button',
+              { type: 'button', class: `btn ${active ? 'ghost' : 'primary'}`, onclick: (() => { onStart(m.id); close(); }) as EventListener },
+              done || active ? t.missionRestart : t.missionStart,
+            )
+          : null,
+      ),
+    );
+  });
+}
+
+function unlockLabel(key: string): string {
+  const map: Record<string, string> = {
+    white: t.starTypes.white,
+    blueGiant: t.starTypes.blueGiant,
+    kind: t.planetKind,
+    moonSizes: t.moonSize(1).replace('1. ', ''),
+    disasters: t.disasters,
+  };
+  return map[key] ?? (t as unknown as Record<string, string>)[key] ?? '';
+}
+
+// --- Rozetler ---
+export function openBadges(progress: Progress) {
+  const grid = h('div', { class: 'badge-grid' });
+  modal(t.badgesTitle, grid, t.close);
+  for (const b of BADGES) {
+    const got = progress.badges.includes(b.id);
+    grid.append(
+      h(
+        'article',
+        { class: `badge ${got ? 'earned' : ''}` },
+        h('img', { src: badgeIcon(b.id), alt: '', width: 96, height: 96, loading: 'lazy' }),
+        h('strong', {}, t.badges[b.id].name),
+        h('span', { class: 'muted small' }, got ? t.badges[b.id].desc : `${t.badgeLockedText} · ${t.badges[b.id].desc}`),
+      ),
+    );
+  }
+}
+
+// --- Ansiklopedi ---
+export function openEncyclopedia(progress: Progress) {
+  const list = h('div', { class: 'encyclopedia' }, h('p', { class: 'muted' }, t.encyclopediaIntro));
+  modal(t.encyclopedia, list, t.close);
+  const count = ENTRY_IDS.filter((id) => progress.discovered.includes(id)).length;
+  list.append(h('p', { class: 'small' }, `${count} / ${ENTRY_IDS.length}`));
+  for (const id of ENTRY_IDS) {
+    const known = progress.discovered.includes(id);
+    const e = t.entries[id];
+    list.append(
+      known
+        ? h('details', { class: 'entry' }, h('summary', {}, e.title), h('p', {}, e.text))
+        : h('div', { class: 'entry locked' }, `🔒 ${t.encyclopediaLocked}`),
+    );
+  }
+}
+
+// --- Gerçek gezegenler ---
+export function openRealPlanets(progress: Progress, onPick: (id: RealPlanetId) => void) {
+  const grid = h('div', { class: 'real-grid' });
+  const { close } = modal(t.realTitle, h('div', {}, h('p', { class: 'muted' }, t.realIntro), grid, h('p', { class: 'muted small' }, t.realNote)), t.close);
+  for (const p of REAL_PLANETS) {
+    const info = t.realPlanets[p.id];
+    grid.append(
+      h(
+        'article',
+        { class: `real-card ${progress.realViewed.includes(p.id) ? 'seen' : ''}` },
+        h('div', { class: 'real-icon', 'aria-hidden': 'true' }, p.icon),
+        h('strong', {}, info.name),
+        h('p', { class: 'small' }, info.fact),
+        h('button', { type: 'button', class: 'btn primary', onclick: (() => { onPick(p.id); close(); }) as EventListener }, t.realExplore),
+      ),
+    );
+  }
+}
+
+// --- Daha fazla menüsü ---
+export interface MenuItem {
+  icon: string;
+  label: string;
+  action: () => void;
+}
+
+export function openMenu(anchor: HTMLElement, items: MenuItem[]) {
+  document.querySelector('.menu-pop')?.remove();
+  const pop = h(
+    'div',
+    { class: 'menu-pop panel', role: 'menu' },
+    ...items.map((it) =>
+      h(
+        'button',
+        {
+          type: 'button',
+          role: 'menuitem',
+          class: 'menu-item',
+          onclick: (() => {
+            pop.remove();
+            it.action();
+          }) as EventListener,
+        },
+        h('span', { 'aria-hidden': 'true' }, it.icon),
+        it.label,
+      ),
+    ),
+  );
+  document.body.append(pop);
+  const r = anchor.getBoundingClientRect();
+  pop.style.top = `${r.bottom + 8}px`;
+  pop.style.right = `${Math.max(12, window.innerWidth - r.right)}px`;
+  const close = (e: Event) => {
+    if (!pop.contains(e.target as Node) && e.target !== anchor) {
+      pop.remove();
+      document.removeEventListener('pointerdown', close, true);
+    }
+  };
+  setTimeout(() => document.addEventListener('pointerdown', close, true));
+  (pop.querySelector('button') as HTMLButtonElement | null)?.focus();
 }

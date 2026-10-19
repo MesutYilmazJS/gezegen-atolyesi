@@ -92,12 +92,17 @@ export function createReportPanel(root: HTMLElement) {
       for (const [k, v] of rows) stats.append(h('dt', {}, k), h('dd', {}, v));
 
       stage.innerHTML = '';
-      stage.append(
-        h('div', { class: 'eyebrow' }, t.currentStage),
-        h('strong', {}, `${r.stage + 1}. ${t.stages[r.stage]}`),
-        h('span', {}, t.stageDescriptions[r.stage]),
-      );
-      if (r.stuckReason) stage.append(h('div', { class: 'stuck' }, h('strong', {}, `⚠ ${t.stuckAt}: `), r.stuckReason));
+      if (r.kind === 'gas') {
+        stage.append(h('div', { class: 'eyebrow' }, t.planetKind), h('strong', {}, t.kinds.gas), h('span', {}, t.gasStage));
+      } else {
+        stage.append(
+          h('div', { class: 'eyebrow' }, t.currentStage),
+          h('strong', {}, `${r.stage + 1}. ${t.stages[r.stage]}`),
+          h('span', {}, t.stageDescriptions[r.stage]),
+        );
+        if (r.activeDisaster) stage.append(h('div', { class: 'stuck' }, h('strong', {}, `${t.disasterNames[r.activeDisaster]}: `), t.disasterInfo[r.activeDisaster]));
+        else if (r.stuckReason) stage.append(h('div', { class: 'stuck' }, h('strong', {}, `⚠ ${t.stuckAt}: `), r.stuckReason));
+      }
 
       life.innerHTML = '';
       const notes = r.lifeNotes.length ? r.lifeNotes : [t.noLifeYet];

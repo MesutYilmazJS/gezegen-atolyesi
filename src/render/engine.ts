@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { PlanetReport } from '../sim/physics';
 import type { PlanetSettings } from '../state/settings';
-import { AsteroidFlyby, Moons, Starfield, SunBillboard } from './environment';
+import { AsteroidFlyby, ImpactAnimation, Moons, Probe, Satellites, Starfield, SunBillboard } from './environment';
 import { PlanetSystem, Quality } from './planetSystem';
 
 export type QualityMode = Quality | 'auto';
@@ -22,7 +22,15 @@ export class Engine {
   readonly planet: PlanetSystem;
 
   private sunDir = new THREE.Vector3(-0.85, 0.3, 0.55).normalize();
+  /** Çift yıldızda ikinci güneşin yönü */
+  private sun2Dir = new THREE.Vector3(-0.35, 0.12, 0.93).normalize();
   private sunLight: THREE.DirectionalLight;
+  private sun2Light: THREE.DirectionalLight;
+  private sun2: SunBillboard;
+  private satellites = new Satellites();
+  private probe = new Probe();
+  private impact = new ImpactAnimation();
+  private satelliteAmount = 0;
   private stars: Starfield;
   private sun: SunBillboard;
   private moons = new Moons();
@@ -70,13 +78,30 @@ export class Engine {
     this.controls.minDistance = 1.4;
     this.controls.maxDistance = 30;
 
-    this.planet = new PlanetSystem(this.renderer, this.sunDir);
+    this.planet = new PlanetSystem(this.renderer, this.sunDir, this.sun2Dir);
     this.stars = new Starfield(2500);
     this.sun = new SunBillboard(this.sunDir);
+    this.sun2 = new SunBillboard(this.sun2Dir);
+    this.sun2.mesh.visible = false;
     this.sunLight = new THREE.DirectionalLight(0xffffff, 2.2);
     this.sunLight.position.copy(this.sunDir).multiplyScalar(10);
+    this.sun2Light = new THREE.DirectionalLight(0xffffff, 0);
+    this.sun2Light.position.copy(this.sun2Dir).multiplyScalar(10);
 
-    this.scene.add(this.stars.points, this.sun.mesh, this.planet.root, this.moons.group, this.asteroid.group, this.sunLight, new THREE.AmbientLight(0xffffff, 0.04));
+    this.scene.add(
+      this.stars.points,
+      this.sun.mesh,
+      this.sun2.mesh,
+      this.planet.root,
+      this.moons.group,
+      this.asteroid.group,
+      this.satellites.points,
+      this.probe.group,
+      this.impact.group,
+      this.sunLight,
+      this.sun2Light,
+      new THREE.AmbientLight(0xffffff, 0.04),
+    );
 
     // Mobilde varsayılan olarak orta kalite ile başla
     const coarse = window.matchMedia('(pointer: coarse)').matches;
@@ -94,12 +119,18 @@ export class Engine {
   /** Gezegeni yeni ayarlarla günceller */
   apply(s: PlanetSettings, report: PlanetReport, instant = false) {
     const prev = this.settings;
-    const seedChanged = prev?.seed !== s.seed || prev?.rings.enabled !== s.rings.enabled;
+    const seedChanged = prev?.seed !== s.seed || prev?.rings.enabled !== s.rings.enabled || prev?.kind !== s.kind;
     this.settings = s;
-    this.planet.bake(s.seed, this.quality);
+    this.planet.bake(s.seed, this.quality, s.tectonics);
     this.planet.apply(s, report, instant);
     this.sun.apply(s, report);
     this.sunLight.color.setRGB(...report.visual.starColor);
+    const v = report.visual;
+    this.sun2.mesh.visible = v.star2Strength > 0;
+    this.sun2.apply(s, report, 0.6, v.star2Color);
+    this.sun2Light.color.setRGB(...v.star2Color);
+    this.sun2Light.intensity = 2.2 * v.star2Strength;
+    this.satelliteAmount = v.satellites;
     const R = Math.sqrt(s.size);
     const ringR = s.rings.enabled ? this.planet.ringOuter || R * 2.5 : 0;
     this.moons.apply(s, R, ringR);
@@ -126,6 +157,25 @@ export class Engine {
       this.focusTo = target;
       this.focusT = 0;
     }
+  }
+
+  /** Göktaşının gezegene çarpma animasyonu; dir nesne uzayında çarpma noktası */
+  playImpact(dir: [number, number, number], onHit?: () => void) {
+    this.planet.root.updateMatrixWorld();
+    const p = this.planet.spinGroup.localToWorld(new THREE.Vector3(...dir).normalize());
+    this.impact.play(p, this.planet.radius, onHit);
+  }
+
+  /** Yüksek çözünürlüklü fotoğraf (PNG) */
+  async photo(scale = 2): Promise<Blob | null> {
+    const prev = this.renderer.getPixelRatio();
+    this.renderer.setPixelRatio(Math.min(3, (window.devicePixelRatio || 1) * scale));
+    this.resize();
+    this.renderer.render(this.scene, this.camera);
+    const blob = await new Promise<Blob | null>((res) => this.renderer.domElement.toBlob(res, 'image/png'));
+    this.renderer.setPixelRatio(prev);
+    this.resize();
+    return blob;
   }
 
   setQualityMode(mode: QualityMode) {
@@ -168,7 +218,7 @@ export class Engine {
     this.renderer.setPixelRatio(pr);
     this.stars.setPixelRatio(pr);
     this.planet.setQuality(this.quality);
-    if (this.settings) this.planet.bake(this.settings.seed, this.quality);
+    if (this.settings) this.planet.bake(this.settings.seed, this.quality, this.settings.tectonics);
     this.resize();
   }
 
@@ -208,10 +258,15 @@ export class Engine {
     }
 
     this.controls.update();
-    this.planet.update(dt, this.elapsed, 0.05 * motion);
+    this.planet.update(dt, this.elapsed, motion);
     this.moons.update(this.elapsed, 1);
     this.asteroid.update(dt, motion);
+    const R = this.planet.radius;
+    this.satellites.update(this.elapsed, R, this.satelliteAmount, 1);
+    this.probe.update(this.elapsed, R, this.planet.ringOuter, 1);
+    this.impact.update(dt, R);
     this.sun.update(this.camera);
+    this.sun2.update(this.camera);
     this.renderer.render(this.scene, this.camera);
     this.measure(dt);
   }

@@ -1,5 +1,6 @@
 import { t } from '../i18n';
 import { PlanetReport, STAGE_STARTS, TIMELINE_GYR, sliderToTime, timeToSlider } from '../sim/physics';
+import type { DisasterEvent } from '../state/settings';
 import { h, infoButton } from './dom';
 
 function ageText(time: number): string {
@@ -12,6 +13,7 @@ export function createTimeline(root: HTMLElement, onTime: (time: number) => void
   let playing = false;
   let current = 1;
   let last = 0;
+  let speed = 1;
 
   const playBtn = h('button', { class: 'play-btn', type: 'button', 'aria-label': t.play }, '▶');
   const input = h('input', {
@@ -27,6 +29,7 @@ export function createTimeline(root: HTMLElement, onTime: (time: number) => void
     }) as EventListener,
   });
   const blocked = h('div', { class: 'timeline-blocked' });
+  const markers = h('div', { class: 'timeline-markers', 'aria-hidden': 'true' });
   const ticks = h(
     'div',
     { class: 'timeline-ticks' },
@@ -45,7 +48,7 @@ export function createTimeline(root: HTMLElement, onTime: (time: number) => void
 
   root.append(
     playBtn,
-    h('div', { class: 'timeline-track' }, blocked, input, ticks),
+    h('div', { class: 'timeline-track' }, blocked, markers, input, ticks),
     h('div', { class: 'timeline-info' }, stageName, age),
     infoButton(t.timeline, t.info.timeline),
   );
@@ -54,7 +57,7 @@ export function createTimeline(root: HTMLElement, onTime: (time: number) => void
     if (!playing) return;
     const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
-    current = sliderToTime(Math.min(1, timeToSlider(current) + dt / 21));
+    current = sliderToTime(Math.min(1, timeToSlider(current) + (dt / 21) * speed));
     onTime(current);
     if (current >= 1) stop();
     else requestAnimationFrame(tick);
@@ -68,6 +71,11 @@ export function createTimeline(root: HTMLElement, onTime: (time: number) => void
 
   function toggle() {
     if (playing) return stop();
+    start(1);
+  }
+
+  function start(spd: number) {
+    speed = spd;
     playing = true;
     if (current >= 0.999) {
       current = 0;
@@ -84,6 +92,20 @@ export function createTimeline(root: HTMLElement, onTime: (time: number) => void
   return {
     toggle,
     stop,
+    /** Felaketten sonra toparlanmayı yavaşça göster */
+    play(spd = 1) {
+      stop();
+      start(spd);
+    },
+    get playing() {
+      return playing;
+    },
+    setEvents(events: DisasterEvent[]) {
+      markers.innerHTML = '';
+      for (const e of events) {
+        markers.append(h('span', { class: `marker ${e.type}`, style: `left:${timeToSlider(e.time) * 100}%` }));
+      }
+    },
     step(delta: number) {
       stop();
       onTime(sliderToTime(Math.min(1, Math.max(0, timeToSlider(current) + delta))));

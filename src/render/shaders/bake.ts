@@ -19,6 +19,7 @@ varying vec2 vUv;
 uniform vec3 uSeedOffset;
 uniform int uPass;
 uniform int uOctaves;
+uniform float uTectonics;
 
 ${noiseGLSL}
 
@@ -33,10 +34,11 @@ vec3 dirFromUv(vec2 uv) {
 float heightAt(vec3 d) {
   vec3 p = d + uSeedOffset;
   vec3 warp = vec3(fbm(p * 1.3, 4), fbm(p * 1.3 + 7.1, 4), fbm(p * 1.3 + 13.7, 4));
-  float continents = fbm(p * 1.1 + warp * 0.55, uOctaves);
+  // Tektonik hareket: daha parçalı kıtalar ve daha yüksek dağlar
+  float continents = fbm(p * (0.9 + 0.7 * uTectonics) + warp * 0.55, uOctaves);
   float mountains = ridged(p * 2.6 + warp * 0.3, uOctaves);
   float h = continents * 1.15;
-  h += (mountains - 0.35) * 0.55 * smoothstep(-0.05, 0.35, continents);
+  h += (mountains - 0.35) * (0.15 + 0.85 * uTectonics) * smoothstep(-0.05, 0.35, continents);
   h += fbm(p * 9.0, 3) * 0.05;
   return h;
 }

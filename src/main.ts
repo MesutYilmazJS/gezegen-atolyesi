@@ -1,10 +1,24 @@
 import './style.css';
+import { SoundEngine } from './audio/sound';
+import { BADGES } from './game/badges';
+import { INFO_TO_ENTRY, discoveredBy } from './game/encyclopedia';
+import { MISSIONS, MissionId, lockedBy } from './game/missions';
+import { loadProgress, saveProgress } from './game/progress';
+import { REAL_PLANETS, RealPlanetId } from './game/realPlanets';
 import { t } from './i18n';
 import { Engine } from './render/engine';
-import { computeReport, PlanetReport } from './sim/physics';
-import { defaultSettings, PlanetSettings, randomSettings } from './state/settings';
-import { loadCurrent, loadPrefs, Prefs, saveCurrent, savePrefs, saveToAlbum } from './state/storage';
-import { openAlbum, openOptions } from './ui/dialogs';
+import { DISASTERS, PlanetReport, computeReport } from './sim/physics';
+import { DisasterType, PlanetSettings, defaultSettings, randomSettings } from './state/settings';
+import { loadAlbum, loadCurrent, loadPrefs, Prefs, saveCurrent, savePrefs, saveToAlbum } from './state/storage';
+import {
+  openAlbum,
+  openBadges,
+  openEncyclopedia,
+  openMenu,
+  openMissions,
+  openOptions,
+  openRealPlanets,
+} from './ui/dialogs';
 import { h, toast } from './ui/dom';
 import { createReportPanel } from './ui/reportPanel';
 import { createSettingsPanel, Patch, SectionId, SECTIONS } from './ui/settingsPanel';
@@ -15,13 +29,15 @@ const $ = <T extends HTMLElement>(sel: string) => document.querySelector(sel) as
 let settings: PlanetSettings = loadCurrent() ?? defaultSettings();
 let report: PlanetReport = computeReport(settings);
 let prefs: Prefs = loadPrefs();
+const progress = loadProgress();
 
 document.title = t.appName;
 
-// --- 3B sahne ---
+// --- 3B sahne ve ses ---
 const engine = new Engine($('#viewport'), {
   onQualityDropped: () => toast(t.qualityDropped),
 });
+const sound = new SoundEngine();
 
 // --- Arayüz ---
 const nameInput = $<HTMLInputElement>('#planet-name');
@@ -31,20 +47,49 @@ nameInput.addEventListener('input', () => {
   scheduleSave();
 });
 
-const settingsPanel = createSettingsPanel($('#settings-body'), (p) => update(p));
+const isLocked = (key: string) => (prefs.mode === 'missions' ? lockedBy(key, progress.completedMissions) : null);
+
+const settingsPanel = createSettingsPanel(
+  $('#settings-body'),
+  {
+    onChange: (p) => {
+      playPatchSound(p);
+      update(p);
+    },
+    onDisaster: triggerDisaster,
+    onClearDisasters: () => {
+      update({ events: [] });
+      toast(t.disastersCleared);
+    },
+    onInfo: (key) => discover(INFO_TO_ENTRY[key]),
+  },
+  isLocked,
+);
 const reportPanel = createReportPanel($('#report-body'));
 const timeline = createTimeline($('#timeline'), (time) => update({ time }));
 
 $('#btn-random').append(t.random);
 $('#btn-save').append(t.save);
 $('#btn-album').append(t.album);
-$('#btn-options').setAttribute('aria-label', t.options);
+$('#btn-more').setAttribute('aria-label', t.more);
 $('#btn-random').addEventListener('click', randomize);
 $('#btn-save').addEventListener('click', save);
 $('#btn-album').addEventListener('click', album);
-$('#btn-options').addEventListener('click', options);
+$('#btn-more').addEventListener('click', (e) => openMoreMenu(e.currentTarget as HTMLElement));
 $('#report-title').textContent = t.catReport;
 $('#app-title').textContent = t.appName;
+
+// Mod seçici (Serbest / Görevler)
+const modeSwitch = $('#mode-switch');
+for (const m of ['free', 'missions'] as const) {
+  modeSwitch.append(
+    h('button', { type: 'button', class: 'mode-btn', 'data-mode': m, onclick: (() => setMode(m)) as EventListener }, t.modes[m]),
+  );
+}
+
+// Görev göstergesi
+const missionHud = $('#mission-hud');
+missionHud.addEventListener('click', missions);
 
 // Mobil: alttaki sekmeler ayarları ve raporu çekmecede açar
 type Tab = SectionId | 'report';
@@ -72,8 +117,20 @@ function scheduleSave() {
 }
 
 function update(patch: Patch, instant = false) {
-  settings = { ...settings, ...patch, rings: { ...settings.rings, ...(patch.rings ?? {}) } };
+  settings = {
+    ...settings,
+    ...patch,
+    rings: { ...settings.rings, ...(patch.rings ?? {}) },
+    composition: { ...settings.composition, ...(patch.composition ?? {}) },
+  };
   render(instant);
+  scheduleSave();
+}
+
+function setSettings(s: PlanetSettings) {
+  timeline.stop();
+  settings = s;
+  render();
   scheduleSave();
 }
 
@@ -83,14 +140,151 @@ function render(instant = false) {
   settingsPanel.sync(settings, report);
   reportPanel.update(report);
   timeline.update(settings.time, report);
+  timeline.setEvents(settings.events);
   if (document.activeElement !== nameInput) nameInput.value = settings.name;
+  const v = report.visual;
+  sound.setAmbience(v.oceanFill * Math.min(1, settings.water * 1.4) * (1 - v.seaIce), Math.max(settings.wind, v.storms * 0.6) * (report.pressure > 0.01 ? 1 : 0.1), Math.max(v.lava, v.molten));
+  evaluateProgress();
 }
 
-function randomize() {
-  timeline.stop();
-  settings = randomSettings();
+function playPatchSound(p: Patch) {
+  if ('water' in p || 'oceanType' in p) sound.play('water');
+  else if ('wind' in p || 'storms' in p || 'atmosphere' in p) sound.play('wind');
+  else if ('volcanism' in p || 'tectonics' in p) sound.play('lava');
+  else sound.play('click');
+}
+
+// --- Görevler, rozetler, ansiklopedi ---
+function evaluateProgress() {
+  let changed = false;
+  // Aktif görev
+  if (prefs.mode === 'missions' && progress.activeMission) {
+    const m = MISSIONS.find((x) => x.id === progress.activeMission);
+    if (m) {
+      const done = m.goals.map((g) => g.test(settings, report));
+      renderMissionHud(m.id, done);
+      if (done.every(Boolean)) {
+        if (!progress.completedMissions.includes(m.id)) progress.completedMissions.push(m.id);
+        progress.activeMission = null;
+        changed = true;
+        sound.play('success');
+        toast(t.missionComplete(t.missions[m.id].name));
+        celebrate();
+        renderMissionHud(null, []);
+        // Yeni açılan ayarları göster
+        settingsPanel.sync(settings, report);
+      }
+    }
+  } else {
+    renderMissionHud(null, []);
+  }
+
+  // Rozetler
+  const ctx = { settings, report, albumCount: loadAlbum().length, realViewed: progress.realViewed };
+  for (const b of BADGES) {
+    if (progress.badges.includes(b.id) || !b.test(ctx)) continue;
+    progress.badges.push(b.id);
+    changed = true;
+    sound.play('success');
+    toast(t.badgeEarned(t.badges[b.id].name));
+  }
+
+  // Ansiklopedi
+  for (const id of discoveredBy(settings, report)) {
+    if (discover(id, false)) changed = true;
+  }
+  if (changed) saveProgress(progress);
+}
+
+function discover(id: string | undefined, save = true): boolean {
+  if (!id || progress.discovered.includes(id)) return false;
+  progress.discovered.push(id);
+  const entry = t.entries[id as keyof typeof t.entries];
+  if (entry) toast(t.newEntry(entry.title));
+  if (save) saveProgress(progress);
+  return true;
+}
+
+function renderMissionHud(id: MissionId | null, done: boolean[]) {
+  missionHud.hidden = prefs.mode !== 'missions';
+  missionHud.innerHTML = '';
+  if (!id) {
+    missionHud.append(h('span', { class: 'hud-icon' }, '🎯'), h('span', {}, t.missionNone));
+    return;
+  }
+  const m = MISSIONS.find((x) => x.id === id)!;
+  missionHud.append(
+    h('span', { class: 'hud-icon' }, '🎯'),
+    h(
+      'span',
+      { class: 'hud-body' },
+      h('strong', {}, t.missions[id].name),
+      h('span', { class: 'hud-goals' }, ...m.goals.map((g, i) => h('span', { class: `goal ${done[i] ? 'ok' : ''}` }, `${done[i] ? '✓' : '○'} ${g.label}`))),
+    ),
+  );
+}
+
+function celebrate() {
+  const el = h('div', { class: 'celebrate', 'aria-hidden': 'true' });
+  for (let i = 0; i < 28; i++) {
+    el.append(h('span', { style: `--x:${Math.random() * 100}%;--d:${0.6 + Math.random() * 0.9}s;--h:${Math.floor(Math.random() * 360)}` }));
+  }
+  document.body.append(el);
+  setTimeout(() => el.remove(), 1800);
+}
+
+function setMode(mode: Prefs['mode']) {
+  prefs = { ...prefs, mode };
+  savePrefs(prefs);
+  modeSwitch.querySelectorAll('.mode-btn').forEach((b) => b.classList.toggle('active', (b as HTMLElement).dataset.mode === mode));
   render();
-  scheduleSave();
+  if (mode === 'missions' && !progress.activeMission) missions();
+}
+
+function missions() {
+  openMissions(progress, (id) => {
+    if (prefs.mode !== 'missions') setMode('missions');
+    progress.activeMission = id;
+    saveProgress(progress);
+    const m = MISSIONS.find((x) => x.id === id)!;
+    if (m.start) setSettings(m.start());
+    else render();
+  });
+}
+
+// --- Felaketler ---
+function triggerDisaster(type: DisasterType) {
+  if (report.young || settings.time < 0.1) {
+    toast(t.disasterTooEarly);
+    return;
+  }
+  // Toparlanmayı izlemek için zaman çizelgesinde yer bırak
+  const room = type === 'runaway' ? 0.06 : Math.min(DISASTERS[type].recovery + 0.02, 0.14);
+  const time = Math.min(settings.time, 1 - room);
+  const event = { type, time, seed: Math.floor(Math.random() * 1e9) };
+  update({ events: [...settings.events, event].slice(-12), time });
+  toast(t.disasterTriggered(t.disasterNames[type]));
+  if (type === 'asteroid') {
+    const imp = report.visual.impacts[report.visual.impacts.length - 1];
+    // Çarpmayı göster, sonra zamanı ilerlet
+    timeline.stop();
+    sound.play('whoosh');
+    update({ time: Math.max(0.1, time - 0.0001) });
+    engine.playImpact(imp?.dir ?? [0, 0, 1], () => {
+      sound.play('impact');
+      update({ time });
+      timeline.play(0.3);
+    });
+    return;
+  }
+  sound.play(type === 'supervolcano' ? 'lava' : type === 'flare' ? 'whoosh' : type === 'iceAge' ? 'wind' : 'lava');
+  timeline.play(0.3);
+}
+
+// --- Üst çubuk eylemleri ---
+function randomize() {
+  sound.play('whoosh');
+  setSettings(randomSettings());
 }
 
 function save() {
@@ -101,33 +295,92 @@ function save() {
     settings,
   });
   toast(ok ? t.saved : t.saveFailed);
+  if (ok) sound.play('click');
+  evaluateProgress();
 }
 
 function album() {
   openAlbum((p) => {
-    timeline.stop();
-    settings = p.settings;
-    render();
-    scheduleSave();
+    setSettings(p.settings);
     toast(t.loaded);
   });
 }
 
 function options() {
   openOptions(prefs, (p) => {
-    prefs = p;
-    savePrefs(p);
+    prefs = { ...prefs, ...p };
+    savePrefs(prefs);
     applyPrefs();
   });
+}
+
+function realPlanets() {
+  openRealPlanets(progress, (id: RealPlanetId) => {
+    const p = REAL_PLANETS.find((x) => x.id === id)!;
+    if (prefs.mode === 'missions') setMode('free');
+    setSettings(p.settings());
+    toast(t.realLoaded(t.realPlanets[id].name));
+    if (!progress.realViewed.includes(id)) {
+      progress.realViewed.push(id);
+      saveProgress(progress);
+      evaluateProgress();
+    }
+  });
+}
+
+function openMoreMenu(anchor: HTMLElement) {
+  openMenu(anchor, [
+    prefs.mode === 'missions'
+      ? { icon: '🎨', label: t.modes.free, action: () => setMode('free') }
+      : { icon: '🎯', label: t.missionsTitle, action: missions },
+    { icon: '🌍', label: t.realTitle, action: realPlanets },
+    { icon: '🏅', label: t.badgesTitle, action: () => openBadges(progress) },
+    { icon: '📖', label: t.encyclopedia, action: () => openEncyclopedia(progress) },
+    { icon: '📷', label: t.photoMode, action: enterPhotoMode },
+    { icon: '⚙', label: t.options, action: options },
+  ]);
+}
+
+// --- Fotoğraf modu ---
+const photoBar = $('#photo-bar');
+photoBar.append(
+  h('span', { class: 'photo-hint' }, t.photoHint),
+  h('button', { type: 'button', class: 'btn primary', onclick: (() => takePhoto()) as EventListener }, '📷 ', t.photoTake),
+  h('button', { type: 'button', class: 'btn', onclick: (() => exitPhotoMode()) as EventListener }, t.photoExit),
+);
+
+function enterPhotoMode() {
+  timeline.stop();
+  document.body.classList.add('photo-mode');
+  selectTab(null);
+}
+
+function exitPhotoMode() {
+  document.body.classList.remove('photo-mode');
+}
+
+async function takePhoto() {
+  sound.play('shutter');
+  const blob = await engine.photo(2);
+  if (!blob) return;
+  const url = URL.createObjectURL(blob);
+  const a = h('a', { href: url, download: `${(settings.name || 'gezegen').replace(/[^\p{L}\p{N}_-]+/gu, '-')}.png` });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  toast(t.photoSaved);
 }
 
 function applyPrefs() {
   engine.setQualityMode(prefs.quality);
   engine.setBatterySaver(prefs.batterySaver);
   engine.setReduceMotion(prefs.reduceMotion);
+  sound.setEnabled(prefs.music, prefs.effects);
   document.documentElement.dataset.theme = prefs.theme;
   document.documentElement.classList.toggle('large-text', prefs.largeText);
   document.documentElement.classList.toggle('reduce-motion', prefs.reduceMotion);
+  modeSwitch.querySelectorAll('.mode-btn').forEach((b) => b.classList.toggle('active', (b as HTMLElement).dataset.mode === prefs.mode));
 }
 
 // --- Klavye kısayolları ---
@@ -136,6 +389,10 @@ window.addEventListener('keydown', (e) => {
   if (tag === 'INPUT' && (e.target as HTMLInputElement).type !== 'range') return;
   if (tag === 'SELECT' || tag === 'TEXTAREA' || e.metaKey || e.ctrlKey || e.altKey) return;
   if (document.querySelector('.modal-backdrop')) return;
+  if (e.key === 'Escape' && document.body.classList.contains('photo-mode')) {
+    exitPhotoMode();
+    return;
+  }
   switch (e.key.toLowerCase()) {
     case 'r':
       randomize();
@@ -145,6 +402,13 @@ window.addEventListener('keydown', (e) => {
       break;
     case 'a':
       album();
+      break;
+    case 'g':
+      missions();
+      break;
+    case 'p':
+      if (document.body.classList.contains('photo-mode')) takePhoto();
+      else enterPhotoMode();
       break;
     case 'f':
       engine.focus();

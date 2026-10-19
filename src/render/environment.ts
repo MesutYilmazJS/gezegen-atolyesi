@@ -136,13 +136,13 @@ export class SunBillboard {
     this.mesh.position.copy(dir).multiplyScalar(300);
   }
 
-  apply(s: PlanetSettings, report: PlanetReport) {
-    const apparent = report.star.radius / s.distance; // Dünya'dan Güneş = 1
+  apply(s: PlanetSettings, report: PlanetReport, scale = 1, color?: [number, number, number]) {
+    const apparent = (report.star.radius / s.distance) * scale; // Dünya'dan Güneş = 1
     const core = THREE.MathUtils.clamp(0.06 + Math.log10(1 + apparent) * 0.25, 0.04, 0.6);
     const size = THREE.MathUtils.clamp(30 + apparent * 14, 24, 220);
     this.mesh.scale.setScalar(size);
     this.mat.uniforms.uCore.value = core;
-    this.mat.uniforms.uColor.value.setRGB(...report.visual.starColor);
+    this.mat.uniforms.uColor.value.setRGB(...(color ?? report.visual.starColor));
   }
 
   update(camera: THREE.Camera) {
@@ -181,23 +181,25 @@ export class Moons {
 
   apply(s: PlanetSettings, planetR: number, ringR: number, force = false) {
     this.pending = { s, planetR, ringR };
-    const key = `${s.seed}:${s.moons}:${planetR.toFixed(2)}:${ringR.toFixed(2)}`;
+    const key = `${s.seed}:${s.moons}:${s.moonSizes.join(',')}:${planetR.toFixed(2)}:${ringR.toFixed(2)}`;
     if (key === this.lastKey && !force) return;
     this.lastKey = key;
     for (const m of this.moons) this.group.remove(m.obj);
     this.moons = [];
     const r = rng(s.seed ^ 0x9e3779b9);
     const base = Math.max(planetR * 2.6, ringR * 1.15);
+    const step = Math.min(planetR, 2) * 1.2;
     for (let i = 0; i < s.moons; i++) {
       const tpl = this.templates[i % 3];
       const obj = tpl ? tpl.clone() : fallbackRock(s.seed + i);
-      const size = planetR * (0.08 + r() * 0.14);
+      r();
+      const size = Math.min(planetR, 1.6) * (0.05 + s.moonSizes[i] * 0.2);
       obj.scale.setScalar(size);
-      const radius = base + i * planetR * 1.2 + r() * planetR * 0.4;
+      const radius = base + i * step + r() * step * 0.3;
       this.moons.push({
         obj,
         radius,
-        speed: 0.35 / Math.pow(radius / planetR, 1.5),
+        speed: 0.35 / Math.pow(radius / Math.min(planetR, 2), 1.5),
         phase: r() * Math.PI * 2,
         incline: (r() - 0.5) * 0.35,
         spin: new THREE.Vector3(r(), r(), r()).multiplyScalar(0.3),
@@ -253,5 +255,141 @@ export class AsteroidFlyby {
     this.rock.position.lerpVectors(this.start, this.end, this.t);
     this.rock.rotation.x += dt * 0.4;
     this.rock.rotation.y += dt * 0.25;
+  }
+}
+
+/** Uzay çağındaki medeniyetin yörüngedeki uyduları: küçük, parlayan noktalar */
+export class Satellites {
+  readonly points: THREE.Points;
+  private orbits: { r: number; inc: THREE.Quaternion; speed: number; phase: number }[] = [];
+  private positions: Float32Array;
+  private mat: THREE.PointsMaterial;
+
+  constructor(count = 90) {
+    const r = rng(1234);
+    this.positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const inc = new THREE.Quaternion().setFromEuler(new THREE.Euler((r() - 0.5) * 2.2, r() * Math.PI, 0));
+      this.orbits.push({ r: 1.08 + r() * 0.35 + (r() < 0.15 ? 0.9 : 0), inc, speed: 0.15 + r() * 0.3, phase: r() * Math.PI * 2 });
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(this.positions, 3));
+    this.mat = new THREE.PointsMaterial({ color: 0xfff1d0, size: 2.2, sizeAttenuation: false, transparent: true, opacity: 0, depthWrite: false });
+    this.points = new THREE.Points(geo, this.mat);
+    this.points.frustumCulled = false;
+  }
+
+  update(time: number, planetR: number, amount: number, motion: number) {
+    this.mat.opacity += (amount - this.mat.opacity) * 0.05;
+    this.points.visible = this.mat.opacity > 0.02;
+    if (!this.points.visible) return;
+    const v = new THREE.Vector3();
+    this.orbits.forEach((o, i) => {
+      const a = o.phase + time * o.speed * motion;
+      v.set(Math.cos(a) * o.r, 0, Math.sin(a) * o.r).applyQuaternion(o.inc).multiplyScalar(planetR);
+      this.positions.set([v.x, v.y, v.z], i * 3);
+    });
+    this.points.geometry.attributes.position.needsUpdate = true;
+  }
+}
+
+/** Oyuncunun keşif sondası: gezegenin çevresinde dönen küçük uydu (Blender modeli) */
+export class Probe {
+  readonly group = new THREE.Group();
+  private model: THREE.Object3D | null = null;
+
+  constructor() {
+    loadModel('probe').then((m) => {
+      this.model = m ?? fallbackProbe();
+      this.model.scale.setScalar(0.06);
+      this.group.add(this.model);
+    });
+  }
+
+  update(time: number, planetR: number, ringR: number, motion: number) {
+    if (!this.model) return;
+    const r = Math.max(planetR * 1.55, ringR > 0 ? planetR * 1.2 : 0);
+    const a = time * 0.12 * motion + 1.0;
+    this.group.position.set(Math.cos(a) * r, Math.sin(a * 0.7) * r * 0.35, Math.sin(a) * r);
+    this.group.lookAt(0, 0, 0);
+    this.model.rotation.z = time * 0.1;
+  }
+}
+
+function fallbackProbe(): THREE.Object3D {
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.9), new THREE.MeshStandardMaterial({ color: 0xc9a227, metalness: 0.6, roughness: 0.4 }));
+  const panelMat = new THREE.MeshStandardMaterial({ color: 0x1b2a6b, metalness: 0.3, roughness: 0.5 });
+  const p1 = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.04, 0.7), panelMat);
+  p1.position.x = 1.45;
+  const p2 = p1.clone();
+  p2.position.x = -1.45;
+  const dish = new THREE.Mesh(new THREE.ConeGeometry(0.45, 0.25, 24, 1, true), new THREE.MeshStandardMaterial({ color: 0xdddddd, side: THREE.DoubleSide }));
+  dish.position.z = 0.6;
+  dish.rotation.x = -Math.PI / 2;
+  g.add(body, p1, p2, dish);
+  return g;
+}
+
+/** Göktaşı felaketi: göktaşı uzaydan gelip gezegene çarpar, ardından parlama */
+export class ImpactAnimation {
+  readonly group = new THREE.Group();
+  private rock: THREE.Object3D | null = null;
+  private flash: THREE.Mesh;
+  private t = 2;
+  private from = new THREE.Vector3();
+  private to = new THREE.Vector3();
+  private onHit?: () => void;
+
+  constructor() {
+    loadModel('asteroid').then((m) => {
+      this.rock = m ?? fallbackRock(5);
+      this.rock.visible = false;
+      this.group.add(this.rock);
+    });
+    this.flash = new THREE.Mesh(
+      new THREE.SphereGeometry(1, 24, 16),
+      new THREE.MeshBasicMaterial({ color: 0xffb060, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }),
+    );
+    this.flash.visible = false;
+    this.group.add(this.flash);
+  }
+
+  /** target: çarpma noktası (dünya uzayı) */
+  play(target: THREE.Vector3, planetR: number, onHit?: () => void) {
+    this.to.copy(target);
+    const out = target.clone().normalize();
+    const side = new THREE.Vector3(0, 1, 0).cross(out).normalize();
+    this.from.copy(target).addScaledVector(out, planetR * 6).addScaledVector(side, planetR * 3);
+    this.t = 0;
+    this.onHit = onHit;
+    if (this.rock) {
+      this.rock.visible = true;
+      this.rock.scale.setScalar(planetR * 0.09);
+    }
+    this.flash.scale.setScalar(planetR * 0.05);
+  }
+
+  update(dt: number, planetR: number) {
+    if (this.t >= 2) return;
+    this.t += dt;
+    if (this.t < 1.4) {
+      const k = this.t / 1.4;
+      if (this.rock) {
+        this.rock.position.lerpVectors(this.from, this.to, k * k);
+        this.rock.rotation.x += dt * 3;
+        this.rock.rotation.y += dt * 2;
+      }
+    } else {
+      if (this.rock?.visible) {
+        this.rock.visible = false;
+        this.onHit?.();
+      }
+      const k = (this.t - 1.4) / 0.6;
+      this.flash.visible = k < 1;
+      this.flash.position.copy(this.to);
+      this.flash.scale.setScalar(planetR * (0.05 + k * 0.5));
+      (this.flash.material as THREE.MeshBasicMaterial).opacity = (1 - k) * 0.9;
+    }
   }
 }

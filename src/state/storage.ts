@@ -69,11 +69,23 @@ export interface Prefs {
   reduceMotion: boolean;
   largeText: boolean;
   theme: 'dark' | 'light';
+  mode: 'free' | 'missions';
+  music: boolean;
+  effects: boolean;
 }
 
 export function loadPrefs(): Prefs {
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const d: Prefs = { quality: 'auto', batterySaver: false, reduceMotion: reduce, largeText: false, theme: 'dark' };
+  const d: Prefs = {
+    quality: 'auto',
+    batterySaver: false,
+    reduceMotion: reduce,
+    largeText: false,
+    theme: 'dark',
+    mode: 'free',
+    music: true,
+    effects: true,
+  };
   return { ...d, ...read<Partial<Prefs>>(PREFS_KEY, {}) };
 }
 

@@ -17,6 +17,9 @@ export const tr = {
   catWaterAir: 'Su ve Hava',
   catSurroundings: 'Çevre',
   catReport: 'Rapor',
+  catWater: 'Su',
+  catAtmosphere: 'Atmosfer',
+  catLife: 'Yaşam',
 
   // Ayarlar
   starType: 'Yıldız türü',
@@ -33,6 +36,39 @@ export const tr = {
   ringTilt: 'Halka eğimi',
   on: 'Açık',
   off: 'Kapalı',
+
+  planetKind: 'Gezegen türü',
+  kinds: { rocky: 'Kayalık', gas: 'Gaz devi' },
+  binaryStar: 'Çift yıldız',
+  eccentricity: 'Yörünge şekli',
+  axialTilt: 'Eksen eğikliği',
+  dayLength: 'Gün uzunluğu',
+  tidalLock: 'Kilitli dönüş',
+  planetAge: 'Gezegen yaşı',
+  tectonics: 'Tektonik hareket',
+  craters: 'Krater yoğunluğu',
+  mineral: 'Toprak ve mineraller',
+  minerals: { basalt: 'Bazalt', iron: 'Demirli kızıl', salt: 'Tuz düzlükleri', sulfur: 'Kükürtlü sarı' },
+  oceanType: 'Okyanus türü',
+  oceanTypes: { fresh: 'Tatlı su', salt: 'Tuzlu su', methane: 'Sıvı metan' },
+  tides: 'Gelgit gücü',
+  subsurfaceOcean: 'Yer altı okyanusu',
+  composition: 'Atmosfer bileşimi',
+  gases: { n2: 'Azot', o2: 'Oksijen', co2: 'CO₂', ch4: 'Metan' },
+  clouds: 'Bulut yoğunluğu',
+  storms: 'Fırtınalar',
+  wind: 'Rüzgâr hızı',
+  magneticField: 'Manyetik alan',
+  moonSize: (i: number) => `${i}. ayın büyüklüğü`,
+  civilization: 'Medeniyet seviyesi',
+  civLevels: { none: 'Yok', villages: 'Köyler', industrial: 'Sanayi', space: 'Uzay çağı' },
+  circular: 'Dairesel',
+  elongated: 'Basık',
+  hours: 'saat',
+  days: 'gün',
+  levelLabels: ['Yok', 'Az', 'Orta', 'Çok', 'Aşırı'],
+  locked: 'Kilitli',
+  unlockHint: (m: string) => `"${m}" görevini tamamlayınca açılır`,
 
   starTypes: {
     redDwarf: 'Kırmızı cüce',
@@ -72,6 +108,46 @@ export const tr = {
       'Halkalar, gezegenin çekimiyle parçalanmış buz ve kaya parçacıklarından oluşur. Satürn\'ün halkaları çoğunlukla buzdur ve 280.000 km genişliğinde ama yalnızca birkaç on metre kalınlığındadır.',
     timeline:
       'Zaman çizelgesi, gezegenin 5 milyar yıllık öyküsünü gösterir. Gezegen lav dolu bir küre olarak doğar, soğur, okyanuslar oluşur ve koşullar uygunsa yaşam başlar.',
+    planetKind:
+      'Kayalık gezegenlerin katı bir yüzeyi vardır. Gaz devleri (Jüpiter, Satürn gibi) ise çoğunlukla hidrojen ve helyumdan oluşur; üzerinde durulacak bir yüzey yoktur.',
+    binaryStar:
+      'Evrendeki yıldızların neredeyse yarısı çift yıldız sistemlerindedir. Böyle bir gezegenin gökyüzünde iki güneş doğar ve batar.',
+    eccentricity:
+      'Yörünge dairesel olabilir ya da basık bir elips. Basık yörüngede gezegen bazen yıldızına çok yaklaşır, bazen çok uzaklaşır: yazlar kavurucu, kışlar dondurucu olur.',
+    axialTilt:
+      'Gezegenin dönme ekseninin yörüngesine göre eğikliği. Dünya\'da 23,4°\'dir ve mevsimleri bu yaratır. Uranüs neredeyse yan yatmıştır (98°).',
+    dayLength:
+      'Gezegenin kendi etrafında bir kez dönmesi için geçen süre. Uzun günlerde gündüz çok ısınır, gece çok soğur. Venüs\'te bir gün 5.832 saat sürer!',
+    tidalLock:
+      'Yıldızına çok yakın gezegenler zamanla kilitlenir: bir yüzü hep gündüz, öbür yüzü hep gece kalır. Aradaki "alacakaranlık kuşağı" yaşam için en uygun yer olabilir.',
+    planetAge:
+      'Gezegenin şu anki yaşı. Zaman çizelgesiyle aynı şeyi gösterir: gezegeni doğduğu andan 5 milyar yaşına kadar ilerletebilirsin.',
+    tectonics:
+      'Yer kabuğunun parçalara (levhalara) ayrılıp hareket etmesi. Dağları, kıtaları ve adaları yaratır, karbon döngüsüyle iklimi dengeler. Hiç yoksa kabuk "donuk bir kapak" gibi kalır.',
+    craters:
+      'Göktaşı çarpmalarının bıraktığı izler. Atmosferi ince ya da hiç olmayan gezegenlerde (Ay, Merkür) kraterler milyarlarca yıl silinmeden kalır.',
+    mineral:
+      'Yüzeydeki kayaların ve toprağın rengi minerallerden gelir: demir oksit Mars\'ı kızıl yapar, kükürt Io\'yu sarıya boyar, kuruyan denizler beyaz tuz düzlükleri bırakır.',
+    oceanType:
+      'Okyanuslar tatlı ya da tuzlu su olabilir. Satürn\'ün uydusu Titan\'da ise eksi 180 °C\'de sıvı metandan göller vardır!',
+    tides:
+      'Ayların ve yıldızın çekimi okyanusları kabartır. Gelgit havuzları ilk canlıların doğduğu yerlerden biri olabilir. Güçlü gelgitler gezegenin içini de ısıtır.',
+    subsurfaceOcean:
+      'Jüpiter\'in uydusu Europa\'nın buz kabuğunun altında sıvı bir okyanus vardır. Yüzey donmuş olsa bile derinlerde yaşam olabilir.',
+    composition:
+      'Atmosferin hangi gazlardan oluştuğu. Azot havayı doldurur, oksijen karmaşık canlılar için gereklidir, CO₂ ve metan ise sera gazıdır: gezegeni ısıtır ve gökyüzünün rengini değiştirir.',
+    clouds:
+      'Bulutlar güneş ışığını uzaya geri yansıtarak gezegeni serinletir. Venüs tamamen kalın bulutlarla kaplıdır.',
+    storms:
+      'Fırtınalar, bulutlarda dev girdaplar oluşturur. Jüpiter\'in Büyük Kırmızı Leke\'si yüzyıllardır süren, Dünya\'dan büyük bir fırtınadır.',
+    wind:
+      'Rüzgâr, sıcak ve soğuk bölgeler arasındaki farktan doğar. Neptün\'de rüzgârlar saatte 2.000 km\'ye ulaşır.',
+    magneticField:
+      'Gezegenin çekirdeği bir mıknatıs gibi davranabilir. Manyetik alan yıldız rüzgârını saptırır, atmosferi korur ve kutuplarda kutup ışıklarını yaratır.',
+    moonSize:
+      'Büyük aylar daha güçlü gelgitler yaratır. Dünya\'nın Ayı, gezegenine göre Güneş Sistemi\'ndeki en büyük aylardan biridir.',
+    civilization:
+      'Koşullar uygunsa akıllı canlılar ortaya çıkar. Medeniyetin ne kadar gelişeceğini sen seçersin: köylerden uzay çağına kadar.',
   },
 
   // Zaman çizelgesi
@@ -86,11 +162,182 @@ export const tr = {
     'Şehir ışıkları geceyi aydınlatıyor, yörüngede uydular dönüyor.',
   ],
   timeline: 'Zaman çizelgesi',
+  gasStage: 'Gaz devleri yüzey evrimi geçirmez; bulut kuşakları milyarlarca yıl boyunca döner. Yaşam belki aylarından birinde bulunur.',
   play: 'Oynat',
   pause: 'Duraklat',
   yearsAgo: 'milyar yıl',
   millionYears: 'milyon yıl',
   stuckAt: 'Evrim burada durdu',
+
+  // Felaketler
+  disasters: 'Felaketler',
+  disasterNames: {
+    asteroid: 'Göktaşı çarpması',
+    supervolcano: 'Süper volkan',
+    iceAge: 'Buzul çağı',
+    flare: 'Yıldız patlaması',
+    runaway: 'Sera etkisi kaçağı',
+  },
+  disasterInfo: {
+    asteroid: 'Dev bir göktaşı çarpar: yeni bir krater, toz bulutu ve kısa süreli bir "çarpma kışı".',
+    supervolcano: 'Bir süper volkan patlar: lav akıntıları ve gökyüzünü kaplayan kül bulutları.',
+    iceAge: 'Gezegen soğur, buzullar ekvatora doğru ilerler.',
+    flare: 'Yıldız güçlü bir patlama yapar. Manyetik alan zayıfsa atmosfer uzaya kaçar.',
+    runaway: 'Sera etkisi kontrolden çıkar: okyanuslar kaynar, gezegen Venüs\'e dönüşür. Geri dönüşü yok!',
+  },
+  disasterTooEarly: 'Felaket için gezegenin önce soğuması gerek',
+  disasterTriggered: (n: string) => `${n}! Toparlanmayı izlemek için zaman ilerliyor…`,
+  clearDisasters: 'Felaketleri temizle',
+  disastersCleared: 'Tüm felaketler zaman çizelgesinden kaldırıldı',
+
+  // Modlar
+  modes: { free: 'Serbest yaratım', missions: 'Görevler', real: 'Gerçek gezegenler' },
+  mode: 'Mod',
+
+  // Görevler
+  missionsTitle: 'Görevler',
+  missionActive: 'Aktif görev',
+  missionStart: 'Başla',
+  missionRestart: 'Yeniden başla',
+  missionDone: 'Tamamlandı',
+  missionComplete: (n: string) => `Görev tamamlandı: ${n}`,
+  missionUnlocks: 'Açılanlar',
+  missionHint: 'İpucu',
+  missionNone: 'Bir görev seç',
+  missionProgress: 'Hedefler',
+  allUnlocked: 'Serbest yaratımda tüm ayarlar açıktır.',
+  missions: {
+    firstSteps: {
+      name: 'İlk adım',
+      goal: 'Yaşanabilirlik puanı en az 50 olan bir gezegen yarat.',
+      hint: 'Gezegeni yaşanabilir bölgeye (yeşil şerit) taşı ve biraz su ekle.',
+    },
+    earthTwin: {
+      name: 'Dünya\'nın ikizi',
+      goal: 'Dünya\'ya en az %90 benzeyen bir gezegen yap.',
+      hint: 'Dünya: sarı yıldız, 1 AB, 1 bar, %71 su, büyüklük 1.',
+    },
+    redSun: {
+      name: 'Kızıl güneş altında',
+      goal: 'Kırmızı cüce etrafında yaşanabilirliği en az 60 olan bir dünya kur.',
+      hint: 'Kırmızı cüce çok sönüktür: gezegeni çok yaklaştır.',
+    },
+    iceAndFire: {
+      name: 'Buz ve çöl',
+      goal: 'Hem buzulları hem çölleri olan, sıvı suyu olan bir gezegen yarat.',
+      hint: 'Biraz serin bir iklim ve az su dene.',
+    },
+    oceanWorld: {
+      name: 'Okyanus dünyası',
+      goal: 'Karası olmayan (%96+ su) bir gezegende karmaşık canlılar geliştir.',
+      hint: 'Suyu sonuna kadar artır, sıcaklığı ılık tut.',
+    },
+    ringLord: {
+      name: 'Halkaların efendisi',
+      goal: 'Halkaları ve 3 ayı olan, üzerinde yaşam bulunan bir gezegen yap.',
+      hint: 'Çevre bölümünden halkaları aç ve ay sayısını artır.',
+    },
+    twoSuns: {
+      name: 'İki güneş',
+      goal: 'Çift yıldız sisteminde yaşanabilirliği en az 50 olan bir gezegen yarat.',
+      hint: 'İki yıldız daha fazla ışık verir: gezegeni biraz uzaklaştır.',
+    },
+    underIce: {
+      name: 'Buzun altında',
+      goal: 'Yüzeyi donmuş bir gezegende, buzun altında yaşam başlat.',
+      hint: 'Gezegeni soğut ve yer altı okyanusunu aç.',
+    },
+    saveCiv: {
+      name: 'Medeniyeti kurtar',
+      goal: 'Bir göktaşı çarpmasından sonra medeniyetin yeniden kurulmasını sağla.',
+      hint: 'Göktaşı felaketini tetikle, sonra zamanı ilerlet. Yaşanabilirlik yüksek olmalı.',
+    },
+    venus: {
+      name: 'Venüs\'ün yolu',
+      goal: 'Okyanusları olan bir gezegende sera etkisi kaçağını başlat ve okyanusların kaynamasını izle.',
+      hint: 'Felaketler bölümünden "Sera etkisi kaçağı"nı seç.',
+    },
+  },
+
+  // Rozetler
+  badgesTitle: 'Rozetler',
+  badgeEarned: (n: string) => `Yeni rozet: ${n}`,
+  badgeLockedText: 'Henüz kazanılmadı',
+  badges: {
+    firstLife: { name: 'İlk yaşam', desc: 'Bir gezegende ilk mikropları ortaya çıkar.' },
+    ringLord: { name: 'Halkaların efendisi', desc: 'Halkalı ve üç aylı bir dünya yarat.' },
+    survivor: { name: 'Felaketten sağ çıkan', desc: 'Bir felaketten sonra yaşamın toparlandığını gör.' },
+    twoSuns: { name: 'İki güneş', desc: 'Çift yıldızlı bir gezegende yaşam geliştir.' },
+    civilization: { name: 'Medeniyet', desc: 'Şehir ışıklarıyla parlayan bir gezegen yarat.' },
+    oceanWorld: { name: 'Okyanus dünyası', desc: 'Karası olmayan bir yaşam dünyası kur.' },
+    collector: { name: 'Koleksiyoncu', desc: 'Albümüne 5 gezegen kaydet.' },
+    explorer: { name: 'Kâşif', desc: 'Gerçek gezegenlerin hepsini incele.' },
+  },
+
+  // Ansiklopedi
+  encyclopedia: 'Ansiklopedi',
+  encyclopediaIntro: 'Oyunda karşılaştığın kavramlar burada birikir. Yeni kavramlar keşfetmek için "?" butonlarına bas ve farklı gezegenler yarat.',
+  encyclopediaLocked: 'Henüz keşfedilmedi',
+  newEntry: (n: string) => `Ansiklopediye eklendi: ${n}`,
+  entries: {
+    habitableZone: { title: 'Yaşanabilir bölge', text: 'Bir yıldızın çevresinde, gezegen yüzeyinde suyun sıvı kalabileceği uzaklık aralığı. Güneş Sistemi\'nde Venüs bu bölgenin hemen içinde, Mars ise dış kenarındadır.' },
+    greenhouse: { title: 'Sera etkisi', text: 'CO₂, metan ve su buharı gibi gazlar yüzeyden yayılan ısının uzaya kaçmasını engeller. Sera etkisi olmasaydı Dünya ortalama −18 °C olurdu.' },
+    runaway: { title: 'Sera etkisi kaçağı', text: 'Isınan okyanuslar buharlaşır, su buharı da bir sera gazıdır; bu da daha fazla ısınmaya yol açar. Döngü durmaz ve okyanuslar tamamen kaynar. Venüs\'te büyük olasılıkla böyle oldu.' },
+    tidalLock: { title: 'Gelgit kilidi', text: 'Çekim kuvveti bir gökcisminin dönüşünü yavaşlatıp bir yüzünün hep aynı yöne bakmasını sağlar. Ay\'ın hep aynı yüzünü görmemizin nedeni budur.' },
+    axialTilt: { title: 'Eksen eğikliği', text: 'Dönme ekseninin yörüngeye göre eğikliği mevsimleri yaratır. Eğiklik büyüdükçe yazlar daha sıcak, kışlar daha soğuk olur.' },
+    redDwarf: { title: 'Kırmızı cüce', text: 'Evrendeki en yaygın yıldız türü. Güneş\'ten çok daha küçük ve sönüktür ama trilyonlarca yıl yaşayabilir. Sık sık güçlü parlamalar yapar.' },
+    blueGiant: { title: 'Mavi dev', text: 'Çok sıcak ve parlak dev yıldızlar. Yakıtlarını çok hızlı yaktıkları için yalnızca birkaç milyon yıl yaşar ve süpernova olarak patlarlar.' },
+    binaryStar: { title: 'Çift yıldız', text: 'Ortak bir merkez etrafında dönen iki yıldız. Gezegenler ya ikisinin birden etrafında ya da yalnızca birinin etrafında dolanabilir.' },
+    plateTectonics: { title: 'Levha tektoniği', text: 'Yer kabuğunun büyük levhalar halinde hareket etmesi. Dağları, okyanus çukurlarını ve depremleri yaratır; karbonu yerin içine taşıyarak iklimi dengeler.' },
+    carbonCycle: { title: 'Karbon döngüsü', text: 'Volkanlar havaya CO₂ verir, yağmur ve kayalar onu geri alır. Bu döngü milyonlarca yıl boyunca gezegenin termostatı gibi çalışır.' },
+    magnetosphere: { title: 'Manyetosfer', text: 'Gezegenin manyetik alanının uzaydaki kalkanı. Yıldız rüzgârını saptırır. Mars manyetik alanını kaybettiği için atmosferinin çoğu uzaya kaçtı.' },
+    aurora: { title: 'Kutup ışıkları', text: 'Yıldızdan gelen yüklü parçacıklar manyetik alan boyunca kutuplara yönelir ve atmosferdeki gazları parlatır: yeşil ve mor ışık perdeleri.' },
+    subsurfaceOcean: { title: 'Yer altı okyanusu', text: 'Buz kabuğunun altında, gelgit ısınmasıyla sıvı kalan okyanus. Europa ve Enceladus\'ta bulunur; Güneş Sistemi\'nde yaşam aramanın en umut verici yerleri arasındadır.' },
+    methaneOcean: { title: 'Metan okyanusu', text: 'Çok soğuk dünyalarda su değil metan ve etan sıvı halde bulunur. Titan, yüzeyinde sıvı gölleri olan tek bilinen ötegezegen dışı gökcismidir.' },
+    gasGiant: { title: 'Gaz devi', text: 'Çoğunlukla hidrojen ve helyumdan oluşan dev gezegenler. Katı bir yüzeyleri yoktur; derinlere inildikçe gaz giderek sıvıya dönüşür.' },
+    esi: { title: 'Dünya Benzerlik İndeksi', text: 'Bir gezegenin büyüklük, yoğunluk ve sıcaklık bakımından Dünya\'ya ne kadar benzediğini 0 ile 1 arasında ölçen bir sayı.' },
+    impactWinter: { title: 'Çarpma kışı', text: 'Büyük bir göktaşı çarpması atmosfere toz ve is fırlatır; güneş ışığı yıllarca engellenir. 66 milyon yıl önce dinozorların sonunu getiren olay buydu.' },
+    iceAge: { title: 'Buzul çağı', text: 'Gezegenin uzun süre soğuduğu dönemler. Dünya en az beş büyük buzul çağı geçirdi; bir dönem neredeyse tamamen buzla kaplıydı ("Kartopu Dünya").' },
+    stellarFlare: { title: 'Yıldız patlaması', text: 'Yıldızın yüzeyinde ani enerji boşalması. Güçlü parlamalar atmosferi aşındırabilir ve uydulara zarar verebilir.' },
+    supervolcano: { title: 'Süper volkan', text: 'Normal volkanlardan binlerce kat büyük patlamalar. Yellowstone altındaki süper volkan son kez 640.000 yıl önce patladı.' },
+    eccentricity: { title: 'Yörünge basıklığı', text: 'Yörüngenin daireden ne kadar saptığı. Dünya\'nınki neredeyse daireseldir (0,017); bazı ötegezegenlerin yörüngesi ise uzun birer elipstir.' },
+  },
+
+  // Gerçek gezegenler
+  realTitle: 'Gerçek gezegenler',
+  realIntro: 'Güneş Sistemi\'nden ve ötesinden gerçek dünyalar. Birini seç, incele ve istediğin gibi değiştir.',
+  realExplore: 'İncele',
+  realLoaded: (n: string) => `${n} yüklendi. Ayarları değiştirerek deneyebilirsin.`,
+  realPlanets: {
+    mercury: { name: 'Merkür', fact: 'Güneş\'e en yakın gezegen. Atmosferi olmadığı için gündüz 430 °C, gece −180 °C olur. Yüzeyi Ay gibi kraterlerle kaplıdır.' },
+    venus: { name: 'Venüs', fact: 'Kalın CO₂ atmosferi ve sülfürik asit bulutlarıyla Güneş Sistemi\'nin en sıcak gezegeni: yüzey 460 °C. Bir zamanlar okyanusları olmuş olabilir.' },
+    earth: { name: 'Dünya', fact: 'Bildiğimiz tek yaşam dünyası. Sıvı su, koruyucu manyetik alan, levha tektoniği ve büyük bir ay — hepsi bir arada.' },
+    mars: { name: 'Mars', fact: 'Kızıl rengini demir oksitten alır. İnce atmosferi ve donmuş kutupları var; milyarlarca yıl önce yüzeyinde nehirler akıyordu.' },
+    jupiter: { name: 'Jüpiter', fact: 'Güneş Sistemi\'nin en büyük gezegeni; 1.300 Dünya içine sığar. Büyük Kırmızı Leke yüzyıllardır süren dev bir fırtınadır.' },
+    saturn: { name: 'Satürn', fact: 'Muhteşem buz halkalarıyla ünlü gaz devi. Yoğunluğu sudan düşüktür: dev bir küvet olsaydı yüzerdi!' },
+    trappist1e: { name: 'TRAPPIST-1e', fact: '40 ışık yılı uzaklıkta, bir kırmızı cücenin çevresinde dönen Dünya büyüklüğünde bir gezegen. Yaşanabilir bölgede ve büyük olasılıkla kilitli dönüşte.' },
+    proximab: { name: 'Proxima b', fact: 'Güneş\'e en yakın yıldız olan Proxima Centauri\'nin (4,2 ışık yılı) gezegeni. Yaşanabilir bölgede ama yıldızının güçlü patlamalarına maruz kalıyor.' },
+    kepler452b: { name: 'Kepler-452b', fact: 'Güneş benzeri bir yıldızın yaşanabilir bölgesindeki "Dünya\'nın büyük kuzeni". Dünya\'dan %50 büyük ve 1,5 milyar yıl daha yaşlı.' },
+  },
+  realNote: 'Not: Oyundaki yıldız parlaklıkları sabit olduğundan ötegezegenlerin uzaklıkları, aldıkları ışık miktarı korunacak şekilde ayarlandı.',
+
+  // Fotoğraf modu
+  photoMode: 'Fotoğraf modu',
+  photoTake: 'Fotoğraf çek',
+  photoExit: 'Çık',
+  photoHint: 'Açıyı ayarla, sonra fotoğraf çek',
+  photoSaved: 'Fotoğraf indirildi',
+
+  // Ses
+  sound: 'Ses',
+  music: 'Müzik',
+  effects: 'Ses efektleri',
+
+  // Yüzey görünümü
+  surfaceView: 'Yüzeyden bak',
+  surfaceExit: 'Uzaya dön',
+  surfaceNoSurface: 'Gaz devinin üzerinde durulacak bir yüzey yok',
+  surfaceTooHot: 'Yüzey henüz erimiş halde',
 
   // Rapor
   habitability: 'Yaşanabilirlik',
@@ -145,6 +392,8 @@ export const tr = {
     ['R', 'Rastgele gezegen'],
     ['S', 'Kaydet'],
     ['A', 'Albüm'],
+    ['G', 'Görevler'],
+    ['P', 'Fotoğraf modu / fotoğraf çek'],
     ['Boşluk', 'Zamanı oynat / duraklat'],
     ['← →', 'Zamanda ilerle / geri git'],
     ['F', 'Gezegene odaklan'],
@@ -152,6 +401,8 @@ export const tr = {
   ] as [string, string][],
 
   offlineReady: 'Oyun artık internetsiz de açılabilir',
+  more: 'Daha fazla',
+  unlockAll: 'Tüm kilitleri aç',
   newPlanetNamed: 'Yeni gezegen',
 
   // Simülasyonun ürettiği metinler
@@ -169,6 +420,10 @@ export const tr = {
       noOxygen: 'Havada yeterince oksijen birikmedi; karmaşık canlılar ortaya çıkamadı.',
       oceanWorld: 'Kara olmadığı için ateş ve metal yok; medeniyet kurulamadı.',
       noCivilization: 'Canlılar hayatta kaldı ama medeniyet kuracak kadar elverişli bir dünya değil.',
+      gasGiant: 'Gaz devinin katı bir yüzeyi yok; okyanuslar ve kıtalar oluşamaz.',
+      methaneLife: 'Metan okyanusundaki yaşam çok yavaş gelişiyor; egzotik mikroplar ve yosunlardan öteye geçemedi.',
+      civDisabled: 'Medeniyet seviyesi "yok" olarak ayarlandı.',
+      runaway: 'Sera etkisi kaçağı okyanusları kaynattı; yaşam yok oldu.',
     },
     life: {
       microbes: 'Sıcak su kaynaklarının çevresinde tek hücreli canlılar çoğalıyor.',
@@ -189,11 +444,45 @@ export const tr = {
       noMoons: 'Ay olmadığı için gelgit yok; kıyılarda yaşam daha yavaş gelişti.',
       bigTides: (n: number) => `${n} ayın çekimi dev gelgitler yaratıyor; kıyılar günde iki kez kilometrelerce yer değiştiriyor.`,
       redDwarfEyes: 'Hayvanların gözleri kızılötesini görecek şekilde büyük.',
-      civilization: 'Akıllı canlılar şehirler kurdu; gece tarafı ışıklarla parlıyor.',
+      civilization: {
+        none: '',
+        villages: 'Akıllı canlılar küçük köyler kurdu; geceleri ateşler yanıyor.',
+        industrial: 'Fabrikalar ve şehirler büyüyor; gökyüzünü hafif bir duman sarıyor.',
+        space: 'Akıllı canlılar uzay çağına ulaştı; yörüngede uydular dönüyor.',
+      },
+      recovering: 'Yaşam felaketten ağır hasar aldı; hayatta kalanlar yavaşça yeniden yayılıyor.',
+      subsurface: 'Buz kabuğunun altındaki okyanusta, gelgitlerin ısıttığı sularda yaşam var.',
+      methane: 'Canlılar su yerine sıvı metan kullanıyor; çok yavaş ve soğuk bir yaşam.',
+      tidePools: 'Güçlü gelgitlerin bıraktığı havuzlar yaşamın gelişmesini hızlandırdı.',
+      binary: 'İki güneşin ışığı altında bitkilerin iki farklı gölgesi var.',
+      twilight: 'Yaşam, gündüz ile gece tarafı arasındaki alacakaranlık kuşağında yoğunlaşmış.',
+      extremeSeasons: 'Mevsimler o kadar sert ki canlılar kış uykusuna yatarak hayatta kalıyor.',
+      longDays: 'Uzun günler yüzünden bitkiler gündüz yaprak açıp gece kapanıyor.',
+      giantInsects: 'Oksijence zengin havada böcekler dev boyutlara ulaşmış.',
+      windAdapted: 'Sürekli rüzgâr nedeniyle canlılar yere yakın ve sağlam yapılı.',
     },
     hazards: {
       blueGiant: 'Mavi dev yoğun morötesi ışınım yayıyor ve yakında süpernova olacak.',
       molten: (c: number) => `Gezegen henüz soğumadı: yüzey ${c} °C, her yer lav ve göktaşı yağmuru.`,
+      disaster: {
+        asteroid: 'Göktaşı çarpması: toz bulutu güneşi kapattı, gezegen bir "çarpma kışı" yaşıyor.',
+        supervolcano: 'Süper volkan patladı: kül bulutları gökyüzünü karartıyor.',
+        iceAge: 'Buzul çağı: buzullar ekvatora doğru ilerliyor.',
+        flare: 'Yıldız patlaması: yoğun ışınım atmosferi dövüyor.',
+        runaway: 'Sera etkisi kaçağı: okyanuslar kaynıyor!',
+      },
+      gasGiant: 'Gaz devinde katı bir yüzey yok; ezici basınç ve dev fırtınalar.',
+      earthquakes: 'Aşırı tektonik hareket: sık depremler ve yanardağlar.',
+      stagnantLid: 'Tektonik hareket yok: kabuk donuk bir kapak gibi, karbon döngüsü zayıf.',
+      eccentric: 'Yörünge çok basık: yazlar kavurucu, kışlar dondurucu.',
+      tilt: 'Eksen çok eğik: kutuplar aylarca karanlıkta ya da güneş altında kalıyor.',
+      storms: 'Dev kasırgalar sürekli kıyıları dövüyor.',
+      wind: 'Rüzgârlar saatte yüzlerce kilometre hızla esiyor.',
+      tides: 'Dev gelgit dalgaları kıyıları yutuyor.',
+      fires: 'Oksijen çok fazla: küçük bir kıvılcım dev yangınlara dönüşüyor.',
+      toxicAir: 'Hava zehirli: bu gazları solumak mümkün değil.',
+      bombardment: 'İnce atmosfer göktaşlarını durduramıyor; yüzey sürekli bombardıman altında.',
+      binaryOrbit: 'İki yıldıza çok yakın: yörünge kararsız olabilir.',
       flares: 'Kırmızı cüce sık sık güçlü ışık patlamaları (parlamalar) yapıyor.',
       weakMagnetic: 'Manyetik alan zayıf; atmosfer yavaşça uzaya kaçıyor.',
       runawayGreenhouse: 'Sera etkisi kaçağı: okyanuslar buharlaşıyor, gezegen Venüs\'e dönüşüyor.',
@@ -240,6 +529,14 @@ export const tr = {
       rings: 'Halkalar gökyüzünü dev bir köprü gibi ikiye bölüyor.',
       moons: (n: number) => (n === 1 ? 'Gece olunca tek bir ay yükseliyor.' : `Gece olunca ${n} ay aynı anda gökyüzünde yükseliyor.`),
       noMoons: 'Geceleri ay yok; yalnızca yıldızlar parlıyor.',
+      gas: 'Uçsuz bucaksız bulut kuşakları birbirinin tersine akıyor; derinlerde şimşekler çakıyor ve basınç her şeyi eziyor.',
+      gasMoons: (n: number) => `Çevresinde ${n} ay dolanıyor; belki onlardan birinde yaşam vardır.`,
+      tidalLock: (color: string) => `${color[0].toUpperCase()}${color.slice(1)} güneş gökyüzünde hiç kıpırdamıyor; burada ne sabah var ne akşam.`,
+      binary: 'Hemen ardından ikinci bir güneş yükseliyor; her şeyin iki gölgesi var.',
+      longDay: (h: number) => `Bir gün ${h} saat sürüyor; öğle sıcağı haftalarca bitmiyor.`,
+      shortDay: (h: number) => `Bir gün yalnızca ${h} saat; güneş gökyüzünde koşar gibi ilerliyor.`,
+      windy: 'Bitmeyen bir rüzgâr ufku tozla dolduruyor.',
+      aurora: 'Gece kutuplarda yeşil ve mor ışık perdeleri dalgalanıyor.',
       stage: [
         'Yüzeyde lav nehirleri akıyor, hiçbir şey yaşamıyor.',
         'Soğuyan kabuğa göktaşları düşüyor; sessiz, ölü bir dünya.',
