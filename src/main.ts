@@ -243,11 +243,16 @@ function setMode(mode: Prefs['mode']) {
 
 function missions() {
   openMissions(progress, (id) => {
-    if (prefs.mode !== 'missions') setMode('missions');
+    // Önce görevi ve başlangıç gezegenini ata; değerlendirme yeni gezegenle yapılsın
     progress.activeMission = id;
     saveProgress(progress);
     const m = MISSIONS.find((x) => x.id === id)!;
-    if (m.start) setSettings(m.start());
+    if (m.start) {
+      timeline.stop();
+      settings = m.start();
+      scheduleSave();
+    }
+    if (prefs.mode !== 'missions') setMode('missions');
     else render();
   });
 }
@@ -336,9 +341,34 @@ function openMoreMenu(anchor: HTMLElement) {
     { icon: '🌍', label: t.realTitle, action: realPlanets },
     { icon: '🏅', label: t.badgesTitle, action: () => openBadges(progress) },
     { icon: '📖', label: t.encyclopedia, action: () => openEncyclopedia(progress) },
+    { icon: '🏞', label: t.surfaceView, action: enterSurface },
     { icon: '📷', label: t.photoMode, action: enterPhotoMode },
     { icon: '⚙', label: t.options, action: options },
   ]);
+}
+
+// --- Yüzey görünümü ---
+const surfaceBar = $('#surface-bar');
+surfaceBar.append(
+  h('button', { type: 'button', class: 'btn', onclick: (() => takePhoto()) as EventListener }, '📷'),
+  h('button', { type: 'button', class: 'btn primary', onclick: (() => exitSurface()) as EventListener }, '🪐 ', t.surfaceExit),
+);
+
+function enterSurface() {
+  if (settings.kind === 'gas') {
+    toast(t.surfaceNoSurface);
+    return;
+  }
+  timeline.stop();
+  selectTab(null);
+  document.body.classList.add('surface-mode');
+  sound.play('whoosh');
+  engine.enterSurface(settings, report);
+}
+
+function exitSurface() {
+  document.body.classList.remove('surface-mode');
+  engine.exitSurface();
 }
 
 // --- Fotoğraf modu ---
@@ -393,6 +423,10 @@ window.addEventListener('keydown', (e) => {
     exitPhotoMode();
     return;
   }
+  if (e.key === 'Escape' && document.body.classList.contains('surface-mode')) {
+    exitSurface();
+    return;
+  }
   switch (e.key.toLowerCase()) {
     case 'r':
       randomize();
@@ -412,6 +446,10 @@ window.addEventListener('keydown', (e) => {
       break;
     case 'f':
       engine.focus();
+      break;
+    case 'y':
+      if (document.body.classList.contains('surface-mode')) exitSurface();
+      else enterSurface();
       break;
     case 'h':
       document.body.classList.toggle('ui-hidden');

@@ -4,6 +4,7 @@ import type { PlanetReport } from '../sim/physics';
 import type { PlanetSettings } from '../state/settings';
 import { AsteroidFlyby, ImpactAnimation, Moons, Probe, Satellites, Starfield, SunBillboard } from './environment';
 import { PlanetSystem, Quality } from './planetSystem';
+import { SurfaceView } from './surfaceView';
 
 export type QualityMode = Quality | 'auto';
 
@@ -31,6 +32,7 @@ export class Engine {
   private probe = new Probe();
   private impact = new ImpactAnimation();
   private satelliteAmount = 0;
+  readonly surface: SurfaceView;
   private stars: Starfield;
   private sun: SunBillboard;
   private moons = new Moons();
@@ -79,6 +81,7 @@ export class Engine {
     this.controls.maxDistance = 30;
 
     this.planet = new PlanetSystem(this.renderer, this.sunDir, this.sun2Dir);
+    this.surface = new SurfaceView(this.renderer.domElement);
     this.stars = new Starfield(2500);
     this.sun = new SunBillboard(this.sunDir);
     this.sun2 = new SunBillboard(this.sun2Dir);
@@ -159,6 +162,17 @@ export class Engine {
     }
   }
 
+  /** Yüzey görünümüne geç */
+  enterSurface(s: PlanetSettings, report: PlanetReport) {
+    this.controls.enabled = false;
+    return this.surface.enter(s, report);
+  }
+
+  exitSurface() {
+    this.surface.exit();
+    this.controls.enabled = true;
+  }
+
   /** Göktaşının gezegene çarpma animasyonu; dir nesne uzayında çarpma noktası */
   playImpact(dir: [number, number, number], onHit?: () => void) {
     this.planet.root.updateMatrixWorld();
@@ -171,7 +185,8 @@ export class Engine {
     const prev = this.renderer.getPixelRatio();
     this.renderer.setPixelRatio(Math.min(3, (window.devicePixelRatio || 1) * scale));
     this.resize();
-    this.renderer.render(this.scene, this.camera);
+    if (this.surface.active) this.renderer.render(this.surface.scene, this.surface.camera);
+    else this.renderer.render(this.scene, this.camera);
     const blob = await new Promise<Blob | null>((res) => this.renderer.domElement.toBlob(res, 'image/png'));
     this.renderer.setPixelRatio(prev);
     this.resize();
@@ -231,6 +246,7 @@ export class Engine {
     // Dar (dikey) ekranda gezegen sığsın diye görüş açısını genişlet
     this.camera.fov = w / h < 0.8 ? 52 : 40;
     this.camera.updateProjectionMatrix();
+    this.surface?.resize(w / h);
   }
 
   private setupDoubleTap() {
@@ -255,6 +271,12 @@ export class Engine {
       this.focusT = Math.min(1, this.focusT + dt * 1.5);
       const k = 1 - Math.pow(1 - this.focusT, 3);
       this.camera.position.setLength(this.focusFrom + (this.focusTo - this.focusFrom) * k);
+    }
+
+    if (this.surface.active) {
+      this.surface.update(dt);
+      this.renderer.render(this.surface.scene, this.surface.camera);
+      return;
     }
 
     this.controls.update();

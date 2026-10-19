@@ -216,9 +216,9 @@ function disasterEffects(s: PlanetSettings, time: number) {
         break;
       }
       case 'supervolcano': {
-        const k = fade(0, 0.025);
+        const k = fade(0, 0.045);
         fx.tempDelta -= 15 * k;
-        fx.lava = Math.max(fx.lava, fade(0, 0.03));
+        fx.lava = Math.max(fx.lava, fade(0, 0.05));
         fx.cloudAdd += 0.35 * k;
         fx.ash = Math.max(fx.ash, k);
         fx.lifeLoss = Math.max(fx.lifeLoss, severity * fade(0.005, recovery));

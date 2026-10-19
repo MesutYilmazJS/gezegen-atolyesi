@@ -10,7 +10,7 @@ const candidates = [
 ].filter(Boolean);
 const blender = candidates.find((p) => p === 'blender' || existsSync(p));
 
-for (const script of ['blender/moons.py', 'blender/asteroid.py', 'blender/icon.py']) {
+for (const script of ['blender/moons.py', 'blender/asteroid.py', 'blender/probe.py', 'blender/landscapes.py', 'blender/icon.py', 'blender/badges.py']) {
   console.log(`▶ ${script}`);
   execFileSync(blender, ['--background', '--factory-startup', '--python', script], { stdio: 'inherit' });
 }

@@ -1161,8 +1161,10 @@ body.ui-hidden .mobile-tabs {
   font-weight: 600;
 }
 
-body:has(.mission-hud:not([hidden])) .side {
-  top: calc(130px + var(--safe-t));
+@media (min-width: 761px) and (orientation: landscape), (min-width: 1101px) {
+  body:has(.mission-hud:not([hidden])) .side {
+    top: calc(130px + var(--safe-t));
+  }
 }
 
 /* Kilitli ayarlar */
@@ -1518,4 +1520,22 @@ body.photo-mode .mission-hud {
     flex: 1 0 auto;
     min-width: 58px;
   }
+}
+
+/* Yüzey görünümü */
+body.surface-mode .surface-bar {
+  display: flex;
+}
+
+body.surface-mode .side,
+body.surface-mode .timeline,
+body.surface-mode .topbar,
+body.surface-mode .mobile-tabs,
+body.surface-mode .mission-hud {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.surface-mode #viewport {
+  cursor: grab;
 }

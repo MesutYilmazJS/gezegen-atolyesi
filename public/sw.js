@@ -1,8 +1,11 @@
 // Gezegen Atölyesi service worker: bir kez açıldıktan sonra internetsiz çalışma.
 // Strateji: önce önbellek, arka planda güncelle (stale-while-revalidate).
-const CACHE = 'gezegen-atolyesi-v1';
+const CACHE = 'gezegen-atolyesi-v2';
 const CORE = ['/', '/index.html', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png',
-  '/models/moon_a.glb', '/models/moon_b.glb', '/models/moon_c.glb', '/models/asteroid.glb',
+  '/models/moon_a.glb', '/models/moon_b.glb', '/models/moon_c.glb', '/models/asteroid.glb', '/models/probe.glb',
+  '/models/land_desert.glb', '/models/land_ice.glb', '/models/land_shore.glb', '/models/land_volcanic.glb', '/models/land_forest.glb',
+  '/badges/firstLife.png', '/badges/ringLord.png', '/badges/survivor.png', '/badges/twoSuns.png',
+  '/badges/civilization.png', '/badges/oceanWorld.png', '/badges/collector.png', '/badges/explorer.png',
   '/draco/draco_decoder.wasm', '/draco/draco_wasm_wrapper.js', '/draco/draco_decoder.js'];
 
 self.addEventListener('install', (event) => {

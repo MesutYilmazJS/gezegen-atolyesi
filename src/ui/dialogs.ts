@@ -161,7 +161,7 @@ export function openBadges(progress: Progress) {
       h(
         'article',
         { class: `badge ${got ? 'earned' : ''}` },
-        h('img', { src: badgeIcon(b.id), alt: '', width: 96, height: 96, loading: 'lazy' }),
+        h('img', { src: badgeIcon(b.id), alt: '', width: 96, height: 96 }),
         h('strong', {}, t.badges[b.id].name),
         h('span', { class: 'muted small' }, got ? t.badges[b.id].desc : `${t.badgeLockedText} · ${t.badges[b.id].desc}`),
       ),

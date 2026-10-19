@@ -397,6 +397,7 @@ export const tr = {
     ['Boşluk', 'Zamanı oynat / duraklat'],
     ['← →', 'Zamanda ilerle / geri git'],
     ['F', 'Gezegene odaklan'],
+    ['Y', 'Yüzeyden bak / uzaya dön'],
     ['H', 'Arayüzü gizle / göster'],
   ] as [string, string][],
 
