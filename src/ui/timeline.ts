@@ -2,6 +2,7 @@ import { t } from '../i18n';
 import { PlanetReport, STAGE_STARTS, TIMELINE_GYR, sliderToTime, timeToSlider } from '../sim/physics';
 import type { DisasterEvent } from '../state/settings';
 import { h, infoButton } from './dom';
+import { icon } from './icons';
 
 function ageText(time: number): string {
   const gyr = time * TIMELINE_GYR;
@@ -15,7 +16,7 @@ export function createTimeline(root: HTMLElement, onTime: (time: number) => void
   let last = 0;
   let speed = 1;
 
-  const playBtn = h('button', { class: 'play-btn', type: 'button', 'aria-label': t.play }, '▶');
+  const playBtn = h('button', { class: 'play-btn', type: 'button', 'aria-label': t.play }, icon('play', 20));
   const input = h('input', {
     type: 'range',
     min: 0,
@@ -65,7 +66,7 @@ export function createTimeline(root: HTMLElement, onTime: (time: number) => void
 
   function stop() {
     playing = false;
-    playBtn.textContent = '▶';
+    playBtn.replaceChildren(icon('play', 20));
     playBtn.setAttribute('aria-label', t.play);
   }
 
@@ -81,7 +82,7 @@ export function createTimeline(root: HTMLElement, onTime: (time: number) => void
       current = 0;
       onTime(0);
     }
-    playBtn.textContent = '❚❚';
+    playBtn.replaceChildren(icon('pause', 20));
     playBtn.setAttribute('aria-label', t.pause);
     last = performance.now();
     requestAnimationFrame(tick);

@@ -22,17 +22,18 @@ import {
   StarType,
 } from '../state/settings';
 import { h, infoButton } from './dom';
+import { IconName, icon } from './icons';
 
 export type SectionId = 'star' | 'orbit' | 'planet' | 'water' | 'atmosphere' | 'surroundings' | 'life';
 
-export const SECTIONS: { id: SectionId; label: string; icon: string }[] = [
-  { id: 'star', label: t.catStar, icon: '⭐' },
-  { id: 'orbit', label: t.catOrbit, icon: '🔄' },
-  { id: 'planet', label: t.catPlanet, icon: '🪨' },
-  { id: 'water', label: t.catWater, icon: '💧' },
-  { id: 'atmosphere', label: t.catAtmosphere, icon: '☁️' },
-  { id: 'surroundings', label: t.catSurroundings, icon: '🌙' },
-  { id: 'life', label: t.catLife, icon: '🌱' },
+export const SECTIONS: { id: SectionId; label: string; icon: IconName }[] = [
+  { id: 'star', label: t.catStar, icon: 'sun' },
+  { id: 'orbit', label: t.catOrbit, icon: 'orbit' },
+  { id: 'planet', label: t.catPlanet, icon: 'globe' },
+  { id: 'water', label: t.catWater, icon: 'droplets' },
+  { id: 'atmosphere', label: t.catAtmosphere, icon: 'cloud' },
+  { id: 'surroundings', label: t.catSurroundings, icon: 'moon' },
+  { id: 'life', label: t.catLife, icon: 'sprout' },
 ];
 
 const ADVANCED_KEY = 'gezegen-atolyesi:advanced';
@@ -61,12 +62,12 @@ const STAR_DOT: Record<StarType, string> = {
   blueGiant: '#8fb1ff',
 };
 
-const DISASTER_ICON: Record<DisasterType, string> = {
-  asteroid: '☄️',
-  supervolcano: '🌋',
-  iceAge: '🧊',
-  flare: '☀️',
-  runaway: '🔥',
+const DISASTER_ICON: Record<DisasterType, IconName> = {
+  asteroid: 'comet',
+  supervolcano: 'volcano',
+  iceAge: 'snowflake',
+  flare: 'zap',
+  runaway: 'thermometer',
 };
 
 const fmt = (v: number, d = 1) => v.toLocaleString('tr-TR', { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -278,14 +279,15 @@ export function createSettingsPanel(root: HTMLElement, cb: PanelCallbacks, isLoc
       const b = h(
         'button',
         { type: 'button', role: 'tab', class: 'panel-tab', title: sec.label, onclick: (() => showSection(sec.id)) as EventListener },
-        h('span', { class: 'panel-tab-icon', 'aria-hidden': 'true' }, sec.icon),
+        icon(sec.icon, 22),
         h('span', { class: 'panel-tab-label' }, sec.label),
       );
       tabButtons.set(sec.id, b);
       return b;
     }),
   );
-  root.append(nav);
+  const content = h('div', { class: 'panel-content' });
+  root.append(nav, content);
 
   // Gelişmiş ayarlar katlanır; açık/kapalı tercihi hatırlanır
   let advancedOpen = false;
@@ -303,7 +305,7 @@ export function createSettingsPanel(root: HTMLElement, cb: PanelCallbacks, isLoc
       details = h(
         'details',
         { class: 'advanced', open: advancedOpen },
-        h('summary', {}, t.advancedSettings),
+        h('summary', {}, icon('chevron', 16), t.advancedSettings),
         ...advanced.map((c) => c.el),
       );
       details.addEventListener('toggle', () => {
@@ -373,7 +375,7 @@ export function createSettingsPanel(root: HTMLElement, cb: PanelCallbacks, isLoc
       const status = r.hzStatus === 'in' ? t.inZone : r.hzStatus === 'close' ? t.tooClose : t.tooFar;
       hzText.innerHTML = '';
       hzText.append(
-        h('span', { class: `hz-status ${r.hzStatus}` }, r.hzStatus === 'in' ? '✓ ' : '⚠ ', status),
+        h('span', { class: `hz-status ${r.hzStatus}` }, icon(r.hzStatus === 'in' ? 'check' : 'alert', 14), status),
         ` · ${t.habitableZone}: ${fmt(r.hzInner, 2)}–${fmt(r.hzOuter, 2)} AB`,
       );
     },
@@ -732,11 +734,11 @@ export function createSettingsPanel(root: HTMLElement, cb: PanelCallbacks, isLoc
     h(
       'button',
       { type: 'button', class: 'disaster-btn', title: t.disasterInfo[d], onclick: (() => cb.onDisaster(d)) as EventListener },
-      h('span', { class: 'disaster-icon', 'aria-hidden': 'true' }, DISASTER_ICON[d]),
+      icon(DISASTER_ICON[d], 18),
       h('span', {}, t.disasterNames[d]),
     ),
   );
-  const clearBtn = h('button', { type: 'button', class: 'btn ghost small', onclick: (() => cb.onClearDisasters()) as EventListener }, t.clearDisasters);
+  const clearBtn = h('button', { type: 'button', class: 'btn ghost small', onclick: (() => cb.onClearDisasters()) as EventListener }, icon('eraser', 16), t.clearDisasters);
   const disasters: Control = {
     el: h(
       'div',
@@ -752,7 +754,7 @@ export function createSettingsPanel(root: HTMLElement, cb: PanelCallbacks, isLoc
     },
   };
 
-  root.append(
+  content.append(
     section('star', t.catStar, [star], [binary]),
     section('orbit', t.catOrbit, [distance], [eccentricity, tilt, dayLength, tidalLock]),
     section('planet', t.catPlanet, [kind, size, volcanism], [age, tectonics, craters, mineral]),
@@ -781,7 +783,7 @@ export function createSettingsPanel(root: HTMLElement, cb: PanelCallbacks, isLoc
         if (note && c.key) {
           const by = isLocked(c.key);
           c.el.classList.toggle('is-locked', !!by);
-          note.textContent = by ? `🔒 ${t.unlockHint(by)}` : '';
+          note.replaceChildren(...(by ? [icon('lock', 14), t.unlockHint(by)] : []));
           c.el.querySelectorAll('input, button:not(.info-btn)').forEach((el) => ((el as HTMLInputElement).disabled = !!by));
         }
       }

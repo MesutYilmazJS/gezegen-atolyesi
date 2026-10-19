@@ -237,67 +237,78 @@ select {
 }
 
 .settings-section > h3 {
-  font-size: 0.95em !important;
+  font-size: 1.05em !important;
   text-transform: none !important;
   letter-spacing: 0 !important;
   color: var(--text) !important;
-  margin-bottom: 12px !important;
+  margin: 2px 0 14px !important;
 }
 
+.icon {
+  flex: none;
+  display: block;
+}
+
+/* Masaüstü: solda ikon + yazılı dikey menü, sağda ayarlar */
 .panel-tabs {
-  position: sticky;
-  top: -16px;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-  margin: -16px -16px 14px;
-  padding: 8px 8px 6px;
-  background: var(--panel-solid);
-  border-bottom: 1px solid var(--border);
-  border-radius: var(--radius) var(--radius) 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 76px;
+  flex: none;
+  padding: 10px 6px;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  scrollbar-width: none;
 }
 
 .panel-tab {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 8px 0;
+  gap: 4px;
+  padding: 9px 2px 7px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   background: none;
   cursor: pointer;
   color: var(--muted);
   min-width: 0;
+  transition: background 0.15s, color 0.15s;
 }
 
 .panel-tab:hover {
   background: var(--chip);
+  color: var(--text);
 }
 
 .panel-tab.active {
   background: var(--chip-active);
-  color: var(--text);
-}
-
-.panel-tab-icon {
-  font-size: 1.25em;
-  line-height: 1;
+  color: var(--accent);
 }
 
 .panel-tab-label {
-  display: none;
-  font-size: 0.64em;
+  font-size: 0.7em;
   font-weight: 600;
+  line-height: 1.1;
+  text-align: center;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
+}
+
+.panel-tab.active .panel-tab-label {
+  color: var(--text);
 }
 
 .panel-tab[hidden] {
   display: none;
+}
+
+.panel-content {
+  flex: 1;
+  min-width: 0;
+  padding: 16px;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 /* Gelişmiş ayarlar */
@@ -323,12 +334,11 @@ select {
   display: none;
 }
 
-.advanced > summary::before {
-  content: '▸';
+.advanced > summary .icon {
   transition: transform 0.15s;
 }
 
-.advanced[open] > summary::before {
+.advanced[open] > summary .icon {
   transform: rotate(90deg);
 }
 
@@ -583,6 +593,10 @@ select option {
 }
 
 .hz-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  vertical-align: -2px;
   font-weight: 700;
 }
 
@@ -763,6 +777,8 @@ select option {
   width: 44px;
   height: 44px;
   flex: none;
+  display: grid;
+  place-items: center;
   border-radius: 50%;
   border: none;
   background: var(--accent);
@@ -1017,14 +1033,12 @@ body.ui-hidden .mobile-tabs {
     flex: 1 1 auto;
   }
 
-  .btn {
+  .topbar .btn {
     padding: 0 12px;
-    font-size: 0;
-    gap: 0;
   }
 
-  .btn span {
-    font-size: 16px;
+  .btn-label {
+    display: none;
   }
 
   .side {
@@ -1149,6 +1163,11 @@ body.ui-hidden .mobile-tabs {
   }
 
   .tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
     flex: 1 1 0;
     min-width: 0;
     border: none;
@@ -1163,8 +1182,17 @@ body.ui-hidden .mobile-tabs {
   }
 
   .tab.active {
-    color: var(--text);
+    color: var(--accent);
     border-top-color: var(--accent);
+  }
+
+  .tab span {
+    color: var(--text);
+    font-size: 0.92em;
+  }
+
+  .tab:not(.active) span {
+    color: var(--muted);
   }
 
   .modal {
@@ -1244,8 +1272,8 @@ body.ui-hidden .mobile-tabs {
   display: none;
 }
 
-.hud-icon {
-  font-size: 1.3em;
+.mission-hud > .icon {
+  color: var(--accent);
 }
 
 .hud-body {
@@ -1289,6 +1317,9 @@ body.ui-hidden .mobile-tabs {
 }
 
 .lock-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.8em;
   color: var(--warn);
   margin-top: 4px;
@@ -1347,8 +1378,8 @@ body.ui-hidden .mobile-tabs {
   background: rgba(224, 102, 63, 0.14);
 }
 
-.disaster-icon {
-  font-size: 1.2em;
+.disaster-btn .icon {
+  color: var(--bad);
 }
 
 .timeline-markers {
@@ -1554,7 +1585,18 @@ body.ui-hidden .mobile-tabs {
 }
 
 .real-icon {
-  font-size: 2em;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--c) 60%, white), var(--c) 55%, color-mix(in srgb, var(--c) 40%, black));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--c) 40%, transparent);
+}
+
+.hint,
+.entry.locked {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* Kutlama */
@@ -1655,10 +1697,25 @@ body.surface-mode #viewport {
   cursor: grab;
 }
 
-/* Masaüstünde sol panel içeriği kadar uzar */
+/* Masaüstünde sol panel: dikey menü + içerik, içeriği kadar uzar */
 @media (min-width: 761px) and (orientation: landscape), (min-width: 1101px) {
   .side.left {
     bottom: auto;
+    width: calc(var(--side-w) + 60px);
     max-height: calc(100dvh - 100px - var(--tl-h) - var(--safe-t));
+    padding: 0;
+    display: flex;
+    overflow: hidden;
+  }
+
+  #settings-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+  }
+
+  .sheet-handle {
+    display: none;
   }
 }

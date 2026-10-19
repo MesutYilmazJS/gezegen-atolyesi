@@ -20,6 +20,7 @@ import {
   openRealPlanets,
 } from './ui/dialogs';
 import { h, toast } from './ui/dom';
+import { IconName, icon } from './ui/icons';
 import { createReportPanel } from './ui/reportPanel';
 import { createSettingsPanel, Patch, SectionId, SECTIONS } from './ui/settingsPanel';
 import { createTimeline } from './ui/timeline';
@@ -68,9 +69,12 @@ const settingsPanel = createSettingsPanel(
 const reportPanel = createReportPanel($('#report-body'));
 const timeline = createTimeline($('#timeline'), (time) => update({ time }));
 
-$('#btn-random').append(t.random);
-$('#btn-save').append(t.save);
-$('#btn-album').append(t.album);
+const label = (text: string) => h('span', { class: 'btn-label' }, text);
+$('#btn-random').append(icon('dice'), label(t.random));
+$('#btn-save').append(icon('save'), label(t.save));
+$('#btn-album').append(icon('images'), label(t.album));
+$('#btn-more').append(icon('menu', 20));
+for (const id of ['#btn-random', '#btn-save', '#btn-album']) $(id).setAttribute('title', $(id).textContent ?? '');
 $('#btn-more').setAttribute('aria-label', t.more);
 $('#btn-random').addEventListener('click', randomize);
 $('#btn-save').addEventListener('click', save);
@@ -95,9 +99,11 @@ missionHud.addEventListener('click', missions);
 type Tab = SectionId | 'report';
 let activeTab: Tab | null = null;
 const tabs = $('#mobile-tabs');
-const tabDefs: { id: Tab; label: string }[] = [...SECTIONS, { id: 'report', label: t.catReport }];
+const tabDefs: { id: Tab; label: string; icon: IconName }[] = [...SECTIONS, { id: 'report', label: t.catReport, icon: 'award' }];
 for (const d of tabDefs) {
-  tabs.append(h('button', { type: 'button', class: 'tab', 'data-tab': d.id, onclick: (() => selectTab(d.id)) as EventListener }, d.label));
+  tabs.append(
+    h('button', { type: 'button', class: 'tab', 'data-tab': d.id, onclick: (() => selectTab(d.id)) as EventListener }, icon(d.icon, 20), h('span', {}, d.label)),
+  );
 }
 $('#sheet-handle').addEventListener('click', () => selectTab(null));
 
@@ -209,12 +215,12 @@ function renderMissionHud(id: MissionId | null, done: boolean[]) {
   missionHud.hidden = prefs.mode !== 'missions';
   missionHud.innerHTML = '';
   if (!id) {
-    missionHud.append(h('span', { class: 'hud-icon' }, '🎯'), h('span', {}, t.missionNone));
+    missionHud.append(icon('target', 20), h('span', {}, t.missionNone));
     return;
   }
   const m = MISSIONS.find((x) => x.id === id)!;
   missionHud.append(
-    h('span', { class: 'hud-icon' }, '🎯'),
+    icon('target', 20),
     h(
       'span',
       { class: 'hud-body' },
@@ -336,22 +342,22 @@ function realPlanets() {
 function openMoreMenu(anchor: HTMLElement) {
   openMenu(anchor, [
     prefs.mode === 'missions'
-      ? { icon: '🎨', label: t.modes.free, action: () => setMode('free') }
-      : { icon: '🎯', label: t.missionsTitle, action: missions },
-    { icon: '🌍', label: t.realTitle, action: realPlanets },
-    { icon: '🏅', label: t.badgesTitle, action: () => openBadges(progress) },
-    { icon: '📖', label: t.encyclopedia, action: () => openEncyclopedia(progress) },
-    { icon: '🏞', label: t.surfaceView, action: enterSurface },
-    { icon: '📷', label: t.photoMode, action: enterPhotoMode },
-    { icon: '⚙', label: t.options, action: options },
+      ? { icon: 'palette', label: t.modes.free, action: () => setMode('free') }
+      : { icon: 'target', label: t.missionsTitle, action: missions },
+    { icon: 'globe', label: t.realTitle, action: realPlanets },
+    { icon: 'award', label: t.badgesTitle, action: () => openBadges(progress) },
+    { icon: 'book', label: t.encyclopedia, action: () => openEncyclopedia(progress) },
+    { icon: 'mountain', label: t.surfaceView, action: enterSurface },
+    { icon: 'camera', label: t.photoMode, action: enterPhotoMode },
+    { icon: 'settings', label: t.options, action: options },
   ]);
 }
 
 // --- Yüzey görünümü ---
 const surfaceBar = $('#surface-bar');
 surfaceBar.append(
-  h('button', { type: 'button', class: 'btn', onclick: (() => takePhoto()) as EventListener }, '📷'),
-  h('button', { type: 'button', class: 'btn primary', onclick: (() => exitSurface()) as EventListener }, '🪐 ', t.surfaceExit),
+  h('button', { type: 'button', class: 'btn', 'aria-label': t.photoTake, onclick: (() => takePhoto()) as EventListener }, icon('camera')),
+  h('button', { type: 'button', class: 'btn primary', onclick: (() => exitSurface()) as EventListener }, icon('rocket'), t.surfaceExit),
 );
 
 function enterSurface() {
@@ -375,7 +381,7 @@ function exitSurface() {
 const photoBar = $('#photo-bar');
 photoBar.append(
   h('span', { class: 'photo-hint' }, t.photoHint),
-  h('button', { type: 'button', class: 'btn primary', onclick: (() => takePhoto()) as EventListener }, '📷 ', t.photoTake),
+  h('button', { type: 'button', class: 'btn primary', onclick: (() => takePhoto()) as EventListener }, icon('camera'), t.photoTake),
   h('button', { type: 'button', class: 'btn', onclick: (() => exitPhotoMode()) as EventListener }, t.photoExit),
 );
 

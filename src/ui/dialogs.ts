@@ -7,6 +7,7 @@ import { t } from '../i18n';
 import type { QualityMode } from '../render/engine';
 import { Prefs, SavedPlanet, deleteFromAlbum, loadAlbum } from '../state/storage';
 import { h, modal, toast } from './dom';
+import { IconName, icon } from './icons';
 
 export function openAlbum(onLoad: (p: SavedPlanet) => void) {
   const grid = h('div', { class: 'album-grid' });
@@ -119,13 +120,13 @@ export function openMissions(progress: Progress, onStart: (id: MissionId) => voi
       h(
         'article',
         { class: `mission ${done ? 'done' : ''} ${available ? '' : 'locked'} ${active ? 'active' : ''}` },
-        h('div', { class: 'mission-num', 'aria-hidden': 'true' }, done ? '✓' : available ? String(i + 1) : '🔒'),
+        h('div', { class: 'mission-num', 'aria-hidden': 'true' }, done ? icon('check', 18) : available ? String(i + 1) : icon('lock', 16)),
         h(
           'div',
           { class: 'mission-body' },
           h('strong', {}, txt.name),
           h('p', {}, txt.goal),
-          available ? h('p', { class: 'muted small' }, `💡 ${txt.hint}`) : null,
+          available ? h('p', { class: 'muted small hint' }, icon('lightbulb', 14), txt.hint) : null,
           unlocks ? h('p', { class: 'muted small' }, `${t.missionUnlocks}: ${unlocks}`) : null,
         ),
         available
@@ -181,7 +182,7 @@ export function openEncyclopedia(progress: Progress) {
     list.append(
       known
         ? h('details', { class: 'entry' }, h('summary', {}, e.title), h('p', {}, e.text))
-        : h('div', { class: 'entry locked' }, `🔒 ${t.encyclopediaLocked}`),
+        : h('div', { class: 'entry locked' }, icon('lock', 14), t.encyclopediaLocked),
     );
   }
 }
@@ -196,7 +197,7 @@ export function openRealPlanets(progress: Progress, onPick: (id: RealPlanetId) =
       h(
         'article',
         { class: `real-card ${progress.realViewed.includes(p.id) ? 'seen' : ''}` },
-        h('div', { class: 'real-icon', 'aria-hidden': 'true' }, p.icon),
+        h('div', { class: 'real-icon', 'aria-hidden': 'true', style: `--c:${p.color}` }),
         h('strong', {}, info.name),
         h('p', { class: 'small' }, info.fact),
         h('button', { type: 'button', class: 'btn primary', onclick: (() => { onPick(p.id); close(); }) as EventListener }, t.realExplore),
@@ -207,7 +208,7 @@ export function openRealPlanets(progress: Progress, onPick: (id: RealPlanetId) =
 
 // --- Daha fazla menüsü ---
 export interface MenuItem {
-  icon: string;
+  icon: IconName;
   label: string;
   action: () => void;
 }
@@ -229,7 +230,7 @@ export function openMenu(anchor: HTMLElement, items: MenuItem[]) {
             it.action();
           }) as EventListener,
         },
-        h('span', { 'aria-hidden': 'true' }, it.icon),
+        icon(it.icon, 18),
         it.label,
       ),
     ),
