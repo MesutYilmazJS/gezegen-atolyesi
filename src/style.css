@@ -227,10 +227,113 @@ select {
   display: none;
 }
 
-.settings-section + .settings-section {
-  margin-top: 18px;
-  padding-top: 14px;
+/* Bölüm sekmeleri: aynı anda tek bölüm */
+.settings-section {
+  display: none;
+}
+
+.settings-section.active {
+  display: block;
+}
+
+.settings-section > h3 {
+  font-size: 0.95em !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  color: var(--text) !important;
+  margin-bottom: 12px !important;
+}
+
+.panel-tabs {
+  position: sticky;
+  top: -16px;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin: -16px -16px 14px;
+  padding: 8px 8px 6px;
+  background: var(--panel-solid);
+  border-bottom: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.panel-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 0;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  cursor: pointer;
+  color: var(--muted);
+  min-width: 0;
+}
+
+.panel-tab:hover {
+  background: var(--chip);
+}
+
+.panel-tab.active {
+  background: var(--chip-active);
+  color: var(--text);
+}
+
+.panel-tab-icon {
+  font-size: 1.25em;
+  line-height: 1;
+}
+
+.panel-tab-label {
+  display: none;
+  font-size: 0.64em;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.panel-tab[hidden] {
+  display: none;
+}
+
+/* Gelişmiş ayarlar */
+.advanced {
+  margin-top: 6px;
   border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.advanced > summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.86em;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 4px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.advanced > summary::-webkit-details-marker {
+  display: none;
+}
+
+.advanced > summary::before {
+  content: '▸';
+  transition: transform 0.15s;
+}
+
+.advanced[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.advanced > summary:hover {
+  color: var(--text);
 }
 
 .settings-section h3,
@@ -973,6 +1076,10 @@ body.ui-hidden .mobile-tabs {
     padding-top: 16px;
   }
 
+  .panel-tabs {
+    display: none;
+  }
+
   .settings-section {
     display: none;
   }
@@ -1168,9 +1275,17 @@ body.ui-hidden .mobile-tabs {
 }
 
 /* Kilitli ayarlar */
-.control.is-locked > :not(.lock-note) {
-  opacity: 0.38;
+.control.is-locked > :not(.lock-note):not(.control-head) {
+  display: none;
+}
+
+.control.is-locked > .control-head {
+  opacity: 0.45;
   pointer-events: none;
+}
+
+.control.is-locked {
+  margin-bottom: 8px;
 }
 
 .lock-note {
@@ -1538,4 +1653,12 @@ body.surface-mode .mission-hud {
 
 body.surface-mode #viewport {
   cursor: grab;
+}
+
+/* Masaüstünde sol panel içeriği kadar uzar */
+@media (min-width: 761px) and (orientation: landscape), (min-width: 1101px) {
+  .side.left {
+    bottom: auto;
+    max-height: calc(100dvh - 100px - var(--tl-h) - var(--safe-t));
+  }
 }

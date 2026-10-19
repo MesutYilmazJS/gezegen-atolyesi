@@ -25,15 +25,17 @@ import { h, infoButton } from './dom';
 
 export type SectionId = 'star' | 'orbit' | 'planet' | 'water' | 'atmosphere' | 'surroundings' | 'life';
 
-export const SECTIONS: { id: SectionId; label: string }[] = [
-  { id: 'star', label: t.catStar },
-  { id: 'orbit', label: t.catOrbit },
-  { id: 'planet', label: t.catPlanet },
-  { id: 'water', label: t.catWater },
-  { id: 'atmosphere', label: t.catAtmosphere },
-  { id: 'surroundings', label: t.catSurroundings },
-  { id: 'life', label: t.catLife },
+export const SECTIONS: { id: SectionId; label: string; icon: string }[] = [
+  { id: 'star', label: t.catStar, icon: '⭐' },
+  { id: 'orbit', label: t.catOrbit, icon: '🔄' },
+  { id: 'planet', label: t.catPlanet, icon: '🪨' },
+  { id: 'water', label: t.catWater, icon: '💧' },
+  { id: 'atmosphere', label: t.catAtmosphere, icon: '☁️' },
+  { id: 'surroundings', label: t.catSurroundings, icon: '🌙' },
+  { id: 'life', label: t.catLife, icon: '🌱' },
 ];
+
+const ADVANCED_KEY = 'gezegen-atolyesi:advanced';
 
 export type Patch = Partial<Omit<PlanetSettings, 'rings' | 'composition'>> & {
   rings?: Partial<RingSettings>;
@@ -267,12 +269,66 @@ export function createSettingsPanel(root: HTMLElement, cb: PanelCallbacks, isLoc
 
   const rocky = (s: PlanetSettings) => s.kind === 'rocky';
 
-  const section = (id: SectionId, label: string, items: Control[]) => {
-    controls.push(...items);
-    const el = h('section', { class: 'settings-section', 'data-section': id }, h('h3', {}, label), ...items.map((c) => c.el));
+  // Masaüstünde bölüm sekmeleri: aynı anda yalnızca bir bölüm görünür
+  const tabButtons = new Map<SectionId, HTMLButtonElement>();
+  const nav = h(
+    'nav',
+    { class: 'panel-tabs', role: 'tablist', 'aria-label': t.catPlanet },
+    ...SECTIONS.map((sec) => {
+      const b = h(
+        'button',
+        { type: 'button', role: 'tab', class: 'panel-tab', title: sec.label, onclick: (() => showSection(sec.id)) as EventListener },
+        h('span', { class: 'panel-tab-icon', 'aria-hidden': 'true' }, sec.icon),
+        h('span', { class: 'panel-tab-label' }, sec.label),
+      );
+      tabButtons.set(sec.id, b);
+      return b;
+    }),
+  );
+  root.append(nav);
+
+  // Gelişmiş ayarlar katlanır; açık/kapalı tercihi hatırlanır
+  let advancedOpen = false;
+  try {
+    advancedOpen = localStorage.getItem(ADVANCED_KEY) === '1';
+  } catch {
+    // depolama kapalı olabilir
+  }
+  const advancedBlocks: HTMLDetailsElement[] = [];
+
+  const section = (id: SectionId, label: string, basic: Control[], advanced: Control[] = []) => {
+    controls.push(...basic, ...advanced);
+    let details: HTMLDetailsElement | null = null;
+    if (advanced.length) {
+      details = h(
+        'details',
+        { class: 'advanced', open: advancedOpen },
+        h('summary', {}, t.advancedSettings),
+        ...advanced.map((c) => c.el),
+      );
+      details.addEventListener('toggle', () => {
+        advancedOpen = details!.open;
+        try {
+          localStorage.setItem(ADVANCED_KEY, advancedOpen ? '1' : '0');
+        } catch {
+          // yoksay
+        }
+        for (const d of advancedBlocks) if (d !== details) d.open = advancedOpen;
+      });
+      advancedBlocks.push(details);
+    }
+    const el = h('section', { class: 'settings-section', 'data-section': id }, h('h3', {}, label), ...basic.map((c) => c.el), details);
     sections.set(id, el);
     return el;
   };
+
+  function showSection(id: SectionId) {
+    for (const [k, el] of sections) el.classList.toggle('active', k === id);
+    for (const [k, b] of tabButtons) {
+      b.classList.toggle('active', k === id);
+      b.setAttribute('aria-selected', String(k === id));
+    }
+  }
 
   // --- Yıldız ---
   const star = chips<StarType>({
@@ -697,12 +753,12 @@ export function createSettingsPanel(root: HTMLElement, cb: PanelCallbacks, isLoc
   };
 
   root.append(
-    section('star', t.catStar, [star, binary]),
-    section('orbit', t.catOrbit, [distance, eccentricity, tilt, dayLength, tidalLock]),
-    section('planet', t.catPlanet, [kind, size, age, tectonics, volcanism, craters, mineral]),
-    section('water', t.catWater, [water, oceanType, tides, subsurface]),
-    section('atmosphere', t.catAtmosphere, [atmosphere, composition, clouds, storms, wind, magnetic]),
-    section('surroundings', t.catSurroundings, [moons, ...moonSizes, rings]),
+    section('star', t.catStar, [star], [binary]),
+    section('orbit', t.catOrbit, [distance], [eccentricity, tilt, dayLength, tidalLock]),
+    section('planet', t.catPlanet, [kind, size, volcanism], [age, tectonics, craters, mineral]),
+    section('water', t.catWater, [water], [oceanType, tides, subsurface]),
+    section('atmosphere', t.catAtmosphere, [atmosphere, clouds], [composition, storms, wind, magnetic]),
+    section('surroundings', t.catSurroundings, [moons, rings], moonSizes),
     section('life', t.catLife, [civ, disasters]),
   );
 
@@ -731,9 +787,8 @@ export function createSettingsPanel(root: HTMLElement, cb: PanelCallbacks, isLoc
       }
       // Gaz devinde su bölümü boş kalır
       sections.get('water')!.hidden = s.kind === 'gas';
+      tabButtons.get('water')!.hidden = s.kind === 'gas';
     },
-    showSection(id: SectionId) {
-      for (const [k, el] of sections) el.classList.toggle('active', k === id);
-    },
+    showSection,
   };
 }

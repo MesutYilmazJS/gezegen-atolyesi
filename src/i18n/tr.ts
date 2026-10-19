@@ -68,6 +68,7 @@ export const tr = {
   days: 'gün',
   levelLabels: ['Yok', 'Az', 'Orta', 'Çok', 'Aşırı'],
   locked: 'Kilitli',
+  advancedSettings: 'Gelişmiş ayarlar',
   unlockHint: (m: string) => `"${m}" görevini tamamlayınca açılır`,
 
   starTypes: {
