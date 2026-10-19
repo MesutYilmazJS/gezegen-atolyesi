@@ -17,7 +17,7 @@
   --font-scale: 1;
   --side-w: 320px;
   --top-h: 60px;
-  --tl-h: 76px;
+  --tl-h: 150px;
   --tabs-h: 56px;
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
@@ -938,15 +938,29 @@ select option {
   bottom: calc(16px + var(--safe-b));
   height: var(--tl-h);
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 10px 16px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 16px 8px;
   z-index: 6;
 }
 
+.tl-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.tl-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
 .play-btn {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   flex: none;
   display: grid;
   place-items: center;
@@ -954,78 +968,313 @@ select option {
   border: none;
   background: var(--accent);
   color: #fff;
-  font-size: 1em;
   cursor: pointer;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
-.timeline-track {
-  position: relative;
+.tl-btn {
+  height: 32px;
+  min-width: 32px;
+  padding: 0 8px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--chip);
+  cursor: pointer;
+  color: var(--text);
+}
+
+.tl-btn:hover {
+  background: var(--chip-active);
+}
+
+.speed-btn {
+  font-size: 0.82em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 44px;
+}
+
+.tl-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   flex: 1;
   min-width: 0;
-  padding-bottom: 18px;
 }
 
-.timeline-track input {
+.tl-stage-icon {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 18%, transparent);
+}
+
+.tl-info-text {
+  min-width: 0;
+}
+
+.tl-info-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.tl-stage-name {
+  white-space: nowrap;
+}
+
+.tl-age {
+  color: var(--muted);
+  font-size: 0.86em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tl-stage-desc {
+  display: block;
+  color: var(--muted);
+  font-size: 0.82em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tl-stage-desc.warn {
+  color: var(--warn);
+}
+
+.tl-next {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--chip);
+  color: var(--muted);
+  font-size: 0.8em;
+  white-space: nowrap;
+}
+
+.tl-next:empty {
+  display: none;
+}
+
+.tl-next.blocked {
+  color: var(--bad);
+}
+
+/* İz: grafik + şeritler + kaydırıcı */
+.tl-track {
   position: relative;
-  z-index: 1;
+  height: 46px;
+  margin: 0 2px;
 }
 
-.timeline-blocked {
+.tl-graph-wrap {
   position: absolute;
-  top: 11px;
-  height: 6px;
-  border-radius: 3px;
-  background: repeating-linear-gradient(45deg, rgba(224, 102, 63, 0.75) 0 4px, transparent 4px 8px);
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 30px;
+}
+
+.tl-graph {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.tl-graph-area {
+  fill: color-mix(in srgb, var(--good) 22%, transparent);
+}
+
+.tl-graph-line {
+  fill: none;
+  stroke: var(--good);
+  stroke-width: 1.6;
+}
+
+.tl-graph-label {
+  position: absolute;
+  left: 4px;
+  top: 0;
+  font-size: 0.64em;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  pointer-events: none;
+}
+
+.tl-segs {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 32px;
+  height: 10px;
+  display: flex;
+  gap: 3px;
+}
+
+.tl-seg {
+  position: relative;
+  flex: 1;
+  padding: 0;
+  border: none;
+  border-radius: 5px;
+  overflow: hidden;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--c) 22%, var(--track));
+}
+
+.tl-seg-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: var(--c);
+}
+
+.tl-seg.blocked {
+  background: repeating-linear-gradient(45deg, rgba(224, 102, 63, 0.55) 0 4px, rgba(224, 102, 63, 0.12) 4px 8px);
+}
+
+.tl-seg.blocked .tl-seg-fill {
+  opacity: 0.35;
+}
+
+.tl-seg.current {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--c) 60%, transparent);
+}
+
+/* Kaydırıcı: şeritlerin üstünde, yalnızca tutamak görünür */
+.tl-range {
+  position: absolute;
+  left: -11px;
+  right: -11px;
+  width: calc(100% + 22px);
+  top: 26px;
+  height: 22px;
+  margin: 0;
+  z-index: 3;
+  background: transparent;
+}
+
+.tl-range::-webkit-slider-runnable-track {
+  background: transparent !important;
+}
+
+.tl-range::-moz-range-track {
+  background: transparent !important;
+}
+
+.tl-markers {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 30px;
   z-index: 2;
   pointer-events: none;
 }
 
-.timeline-ticks {
+.tl-marker {
   position: absolute;
-  left: 11px;
-  right: 11px;
-  top: 26px;
-  height: 18px;
+  top: 4px;
+  width: 20px;
+  height: 20px;
+  margin-left: -10px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--bad);
+  color: #fff;
+  border: 2px solid var(--panel-solid);
+  pointer-events: auto;
 }
 
-.tick {
+.tl-marker.iceAge {
+  background: #4f9be8;
+}
+
+.tl-marker.flare {
+  background: #d9a92a;
+}
+
+.tl-hover {
   position: absolute;
-  transform: translateX(-2px);
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 0.72em;
-  color: var(--muted);
-  cursor: pointer;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: var(--panel-solid);
+  border: 1px solid var(--border);
+  font-size: 0.76em;
   white-space: nowrap;
-  border-left: 1px solid var(--track);
-  padding-left: 4px;
+  pointer-events: none;
+  z-index: 4;
 }
 
-.tick.reached {
+.tl-hover[hidden] {
+  display: none;
+}
+
+.tl-labels {
+  display: flex;
+  gap: 3px;
+  margin: 0 2px;
+}
+
+.tl-label {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 2px 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.74em;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.tl-label .icon {
+  color: color-mix(in srgb, var(--c) 55%, var(--muted));
+}
+
+.tl-label span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tl-label.reached {
   color: var(--text);
 }
 
-.tick.blocked {
+.tl-label.reached .icon {
+  color: var(--c);
+}
+
+.tl-label.current {
+  font-weight: 800;
+}
+
+.tl-label.blocked {
   color: var(--bad);
+  opacity: 0.75;
+}
+
+.tl-label.blocked span {
   text-decoration: line-through;
-  opacity: 0.7;
-}
-
-.timeline-info {
-  flex: none;
-  text-align: right;
-  min-width: 120px;
-}
-
-.timeline-stage {
-  font-weight: 700;
-}
-
-.timeline-age {
-  color: var(--muted);
-  font-size: 0.85em;
-  font-variant-numeric: tabular-nums;
 }
 
 /* --- Pencereler --- */
@@ -1280,9 +1529,9 @@ body.ui-hidden .mobile-tabs {
     left: 8px;
     right: 8px;
     bottom: calc(var(--tabs-h) + 8px + var(--safe-b));
-    height: 68px;
-    padding: 8px 12px;
-    gap: 10px;
+    height: auto;
+    padding: 8px 10px 6px;
+    gap: 6px;
   }
 
   body[data-sheet='settings'] .timeline,
@@ -1291,26 +1540,66 @@ body.ui-hidden .mobile-tabs {
     pointer-events: none;
   }
 
-  .tick span {
+  .tl-top {
+    gap: 8px;
+  }
+
+  .tl-top > .info-btn,
+  .speed-btn,
+  .tl-next,
+  .tl-stage-desc,
+  .tl-label span,
+  .tl-graph-label {
     display: none;
   }
 
-  .tick {
-    height: 8px;
-  }
-
-  .timeline-track {
-    padding-bottom: 6px;
-  }
-
-  .timeline-info {
-    min-width: 92px;
-    font-size: 0.9em;
+  .tl-btn {
+    height: 30px;
+    min-width: 30px;
+    padding: 0 6px;
   }
 
   .play-btn {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .tl-stage-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .tl-info-line {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .tl-track {
+    height: 38px;
+  }
+
+  .tl-graph-wrap {
+    height: 22px;
+  }
+
+  .tl-segs {
+    top: 25px;
+    height: 9px;
+  }
+
+  .tl-markers {
+    height: 22px;
+  }
+
+  .tl-marker {
+    top: 1px;
+    width: 18px;
+    height: 18px;
+    margin-left: -9px;
+  }
+
+  .tl-range {
+    top: 18px;
   }
 
   .mobile-tabs {

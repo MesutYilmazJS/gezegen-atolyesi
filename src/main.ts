@@ -7,7 +7,7 @@ import { loadProgress, saveProgress } from './game/progress';
 import { REAL_PLANETS, RealPlanetId } from './game/realPlanets';
 import { t } from './i18n';
 import { Engine } from './render/engine';
-import { DISASTERS, PlanetReport, computeReport } from './sim/physics';
+import { DISASTERS, PlanetReport, computeReport, sliderToTime } from './sim/physics';
 import { DisasterType, PlanetSettings, defaultSettings, randomSettings } from './state/settings';
 import { loadAlbum, loadCurrent, loadPrefs, Prefs, saveCurrent, savePrefs, saveToAlbum } from './state/storage';
 import {
@@ -147,10 +147,27 @@ function render(instant = false) {
   reportPanel.update(report);
   timeline.update(settings.time, report);
   timeline.setEvents(settings.events);
+  scheduleCurve();
   if (document.activeElement !== nameInput) nameInput.value = settings.name;
   const v = report.visual;
   sound.setAmbience(v.oceanFill * Math.min(1, settings.water * 1.4) * (1 - v.seaIce), Math.max(settings.wind, v.storms * 0.6) * (report.pressure > 0.01 ? 1 : 0.1), Math.max(v.lava, v.molten));
   evaluateProgress();
+}
+
+// Zaman çizelgesindeki yaşanabilirlik grafiği: zaman dışındaki ayarlar değişince yeniden hesaplanır
+let curveKey = '';
+let curveFrame = 0;
+function scheduleCurve() {
+  const key = JSON.stringify({ ...settings, time: 0, name: '' });
+  if (key === curveKey) return;
+  curveKey = key;
+  cancelAnimationFrame(curveFrame);
+  curveFrame = requestAnimationFrame(() => {
+    const samples = 70;
+    const values: number[] = [];
+    for (let i = 0; i <= samples; i++) values.push(computeReport({ ...settings, time: sliderToTime(i / samples) }).habitability);
+    timeline.setCurve(values);
+  });
 }
 
 function playPatchSound(p: Patch) {
