@@ -344,6 +344,7 @@ export const tr = {
   habitability: 'Yaşanabilirlik',
   earthSimilarity: 'Dünya\'ya benzerlik',
   avgTemp: 'Ortalama sıcaklık',
+  temperature: 'Sıcaklık',
   maxTemp: 'En yüksek',
   minTemp: 'En düşük',
   liquidWater: 'Sıvı su',
@@ -360,6 +361,9 @@ export const tr = {
   habitabilityLabels: ['Ölü dünya', 'Çok zorlu', 'Zorlu', 'Yaşanabilir', 'Cennet gibi'],
   noLifeYet: 'Henüz yaşam yok.',
   noHazards: 'Belirgin bir tehlike yok.',
+  reportLight: 'Dünya\'dan hafif',
+  reportHeavy: 'Dünya\'dan ağır',
+  reportEarthLike: 'Dünya\'ya yakın',
 
   // Albüm ve kayıt
   albumTitle: 'Gezegen Albümü',
