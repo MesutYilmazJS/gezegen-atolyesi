@@ -1,7 +1,44 @@
 {
   "name": "gezegen-atolyesi",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
+  "description": "Kendi gezegenini yarat, yaşamın doğuşunu izle: tarayıcıda çalışan, açık kaynaklı prosedürel gezegen yaratma ve evrim simülasyonu (Three.js, WebGL, TypeScript, PWA).",
+  "keywords": [
+    "gezegen",
+    "gezegen-oluşturucu",
+    "uzay-oyunu",
+    "astronomi",
+    "eğitici-oyun",
+    "procedural-generation",
+    "planet-generator",
+    "planet-simulator",
+    "space",
+    "astronomy",
+    "exoplanets",
+    "habitability",
+    "worldbuilding",
+    "sandbox",
+    "threejs",
+    "webgl",
+    "glsl",
+    "shaders",
+    "typescript",
+    "vite",
+    "pwa",
+    "blender",
+    "educational-game",
+    "browser-game"
+  ],
+  "homepage": "https://github.com/MesutYilmazJS/gezegen-atolyesi#readme",
+  "bugs": {
+    "url": "https://github.com/MesutYilmazJS/gezegen-atolyesi/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MesutYilmazJS/gezegen-atolyesi.git"
+  },
+  "license": "MIT",
+  "author": "MesutYilmazJS",
   "type": "module",
   "scripts": {
     "postinstall": "node scripts/copy-draco.mjs",

@@ -1,0 +1,27 @@
+name: ✨ Özellik önerisi
+description: Yeni bir fikir ya da iyileştirme öner
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: fikir
+    attributes:
+      label: Fikrin ne?
+      description: Ne eklemek ya da değiştirmek istiyorsun?
+    validations:
+      required: true
+  - type: textarea
+    id: neden
+    attributes:
+      label: Neden faydalı olur?
+      description: Oyuncuya ya da projeye ne katar?
+  - type: textarea
+    id: bilim
+    attributes:
+      label: Bilimsel arka plan (varsa)
+      description: Gerçek bir olguya dayanıyorsa kaynak eklemek harika olur.
+  - type: checkboxes
+    id: katki
+    attributes:
+      label: Katkı
+      options:
+        - label: Bunu kendim geliştirmek isterim

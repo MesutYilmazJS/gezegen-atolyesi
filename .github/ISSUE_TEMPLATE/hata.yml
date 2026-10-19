@@ -1,0 +1,36 @@
+name: 🐞 Hata bildirimi
+description: Bir şey beklendiği gibi çalışmıyor
+labels: ["bug"]
+body:
+  - type: textarea
+    id: ne-oldu
+    attributes:
+      label: Ne oldu?
+      description: Gördüğün hatayı kısaca anlat. Ekran görüntüsü çok yardımcı olur.
+    validations:
+      required: true
+  - type: textarea
+    id: adimlar
+    attributes:
+      label: Nasıl tekrarlanır?
+      placeholder: |
+        1. Rastgele gezegen oluştur
+        2. Felaketler > Göktaşı çarpması
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: beklenen
+    attributes:
+      label: Ne olmasını bekliyordun?
+  - type: input
+    id: cihaz
+    attributes:
+      label: Cihaz ve tarayıcı
+      placeholder: ör. iPhone 13, Safari 17 / Windows, Chrome 128
+  - type: textarea
+    id: ayarlar
+    attributes:
+      label: Gezegen ayarları (isteğe bağlı)
+      description: "Geliştirici konsolunda `localStorage.getItem('gezegen-atolyesi:current')` çıktısını yapıştırabilirsin."
+      render: json

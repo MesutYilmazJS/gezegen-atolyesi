@@ -32,7 +32,7 @@ let report: PlanetReport = computeReport(settings);
 let prefs: Prefs = loadPrefs();
 const progress = loadProgress();
 
-document.title = t.appName;
+document.title = `${t.appName} | ${t.tagline}`;
 
 // --- 3B sahne ve ses ---
 const engine = new Engine($('#viewport'), {

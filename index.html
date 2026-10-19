@@ -4,14 +4,54 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#05070f" />
-    <meta name="description" content="Ayarlarla oynayarak kendi gezegenini yarat, üzerinde yaşamın doğup gelişmesini izle." />
+    <meta name="description" content="Gezegen Atölyesi: kendi gezegenini yarat, yaşamın doğuşunu izle. Yıldızını seç, suyu, atmosferi, halkaları ve ayları ayarla; gezegeninin 5 milyar yıllık evrimini 3B olarak izle. Ücretsiz, açık kaynak, tarayıcıda ve telefonda çalışır." />
+    <meta name="keywords" content="gezegen oluşturucu, gezegen yaratma oyunu, uzay oyunu, astronomi oyunu, eğitici oyun, gezegen simülasyonu, yaşanabilir bölge, ötegezegen, evrim simülasyonu, procedural planet generator, planet simulator, space sandbox, exoplanets, three.js, webgl" />
+    <meta name="author" content="MesutYilmazJS" />
+    <meta name="robots" content="index, follow" />
+    <meta name="color-scheme" content="dark light" />
+
+    <!-- Paylaşım kartları (Open Graph / Twitter) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Gezegen Atölyesi" />
+    <meta property="og:title" content="Gezegen Atölyesi: Kendi gezegenini yarat" />
+    <meta property="og:description" content="Yıldızını seç, gezegenini şekillendir ve üzerinde yaşamın doğup gelişmesini 3B olarak izle. Ücretsiz ve açık kaynak." />
+    <meta property="og:image" content="https://raw.githubusercontent.com/MesutYilmazJS/gezegen-atolyesi/main/public/og-image.jpg" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="Halkalı, Dünya benzeri bir gezegen ve Gezegen Atölyesi yazısı" />
+    <meta property="og:locale" content="tr_TR" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Gezegen Atölyesi: Kendi gezegenini yarat" />
+    <meta name="twitter:description" content="Tarayıcıda çalışan, açık kaynaklı gezegen yaratma ve evrim simülasyonu." />
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/MesutYilmazJS/gezegen-atolyesi/main/public/og-image.jpg" />
+
+    <!-- Arama motorları için yapılandırılmış veri -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": ["VideoGame", "WebApplication"],
+        "name": "Gezegen Atölyesi",
+        "alternateName": "Planet Workshop",
+        "description": "Kendi gezegenini yarat, yaşamın doğuşunu izle. Prosedürel 3B gezegen yaratma ve evrim simülasyonu.",
+        "genre": ["Simülasyon", "Eğitim", "Sandbox"],
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Web, Android, iOS, Windows, macOS, Linux",
+        "inLanguage": "tr",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "TRY" },
+        "author": { "@type": "Person", "name": "MesutYilmazJS", "url": "https://github.com/MesutYilmazJS" },
+        "codeRepository": "https://github.com/MesutYilmazJS/gezegen-atolyesi",
+        "license": "https://opensource.org/licenses/MIT",
+        "image": "https://raw.githubusercontent.com/MesutYilmazJS/gezegen-atolyesi/main/public/og-image.jpg"
+      }
+    </script>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" type="image/png" href="/icons/icon-192.png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-    <title>Gezegen Atölyesi</title>
+    <title>Gezegen Atölyesi | Kendi gezegenini yarat, yaşamın doğuşunu izle</title>
   </head>
   <body>
     <div id="viewport" aria-label="3B gezegen görünümü"></div>
@@ -55,6 +95,10 @@
     <footer id="timeline" class="panel timeline"></footer>
     <nav id="mobile-tabs" class="mobile-tabs"></nav>
 
+    <noscript>
+      <h1>Gezegen Atölyesi</h1>
+      <p>Kendi gezegenini yarat, yaşamın doğuşunu izle. Bu oyun çalışmak için JavaScript ve WebGL gerektirir.</p>
+    </noscript>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
