@@ -10,6 +10,7 @@ Tarayıcıda çalışan, açık kaynaklı, prosedürel bir gezegen yaratma ve ev
 *Create your own planet and watch life evolve on it: an open-source procedural planet sandbox for the web.*
 
 [![Lisans: MIT](https://img.shields.io/badge/lisans-MIT-5ad08a.svg)](LICENSE)
+[![CI](https://github.com/MesutYilmazJS/gezegen-atolyesi/actions/workflows/ci.yml/badge.svg)](https://github.com/MesutYilmazJS/gezegen-atolyesi/actions/workflows/ci.yml)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white)
 ![Three.js](https://img.shields.io/badge/Three.js-r170-000000?logo=threedotjs&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-6-646cff?logo=vite&logoColor=white)

@@ -47,7 +47,7 @@ npm run blender
 1. `main` dalından yeni bir dal aç: `ozellik/kisa-ad` veya `duzeltme/kisa-ad`.
 2. Küçük ve anlamlı commit'ler at. Mesajlar Türkçe ya da İngilizce olabilir.
 3. Pull request açıklamasında **ne değişti, neden ve nasıl denendi** kısmını doldur; görsel değişikliklerde ekran görüntüsü ekle.
-4. `npm run build` (tür denetimi + derleme) hatasız geçmeli.
+4. CI (tür denetimi + derleme) yeşil olmalı; yerelde `npm run build` ile deneyebilirsin.
 
 ## Bilimsel doğruluk
 
