@@ -9,6 +9,11 @@ Tarayıcıda çalışan, açık kaynaklı, prosedürel bir gezegen yaratma ve ev
 
 *Create your own planet and watch life evolve on it: an open-source procedural planet sandbox for the web.*
 
+### [🚀 Hemen oyna → gezegen-atolyesi.netlify.app](https://gezegen-atolyesi.netlify.app)
+<sub>Kurulum yok · ücretsiz · telefonda da çalışır · <a href="https://gezegen-atolyesi.netlify.app">Play now</a></sub>
+
+[![Canlı demo](https://img.shields.io/badge/canlı_demo-oyna-6ea8ff?logo=netlify&logoColor=white)](https://gezegen-atolyesi.netlify.app)
+[![Netlify](https://api.netlify.com/api/v1/badges/b8dbfd37-0061-4047-ad32-65bd5cce5852/deploy-status)](https://app.netlify.com/projects/gezegen-atolyesi/deploys)
 [![Lisans: MIT](https://img.shields.io/badge/lisans-MIT-5ad08a.svg)](LICENSE)
 [![CI](https://github.com/MesutYilmazJS/gezegen-atolyesi/actions/workflows/ci.yml/badge.svg)](https://github.com/MesutYilmazJS/gezegen-atolyesi/actions/workflows/ci.yml)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white)
@@ -19,7 +24,7 @@ Tarayıcıda çalışan, açık kaynaklı, prosedürel bir gezegen yaratma ve ev
 
 [Özellikler](#özellikler) · [Hızlı başlangıç](#hızlı-başlangıç) · [Nasıl çalışır](#nasıl-çalışır) · [Yol haritası](#yol-haritası) · [Katkı](#katkıda-bulun) · [English](#english)
 
-<img src="docs/screenshots/ana-ekran.jpg" alt="Gezegen Atölyesi ana ekranı: halkalı, Dünya benzeri bir gezegen, ayar paneli, yaşam raporu ve zaman çizelgesi" width="100%" />
+<a href="https://gezegen-atolyesi.netlify.app"><img src="docs/screenshots/ana-ekran.jpg" alt="Gezegen Atölyesi ana ekranı: halkalı, Dünya benzeri bir gezegen, ayar paneli, yaşam raporu ve zaman çizelgesi" width="100%" /></a>
 
 </div>
 
@@ -66,7 +71,9 @@ Her ayarın arkasında basitleştirilmiş ama gerçek bilime dayanan hesaplar va
 
 ## Hızlı başlangıç
 
-Gereksinim: [Node.js](https://nodejs.org/) 20 veya üstü.
+Sadece oynamak istiyorsan hiçbir şey kurmana gerek yok: **[gezegen-atolyesi.netlify.app](https://gezegen-atolyesi.netlify.app)**. Telefonda "Ana ekrana ekle" dersen uygulama gibi açılır ve internetsiz de çalışır.
+
+Kendi bilgisayarında geliştirmek için gereksinim: [Node.js](https://nodejs.org/) 20 veya üstü.
 
 ```bash
 git clone https://github.com/MesutYilmazJS/gezegen-atolyesi.git
@@ -112,7 +119,7 @@ blender/        Modelleri, manzaraları ve rozetleri üreten Blender (bpy) betik
 
 - [x] **Sürüm 1:** Çekirdek oyun: 3B gezegen, temel ayarlar, yaşam raporu, zaman çizelgesi, kayıt, PWA
 - [x] **Sürüm 2:** Oyunlaştırma: kalan ayarlar, görevler, rozetler, ansiklopedi, gerçek gezegenler, felaketler, yüzey görünümü, fotoğraf modu, ses
-- [ ] **Sürüm 3:** Sosyal: link ile paylaşım ve paylaşım kartı, günün gezegeni, hesap sistemi ve bulut kayıt, topluluk galerisi, İngilizce dil desteği
+- [ ] **Sürüm 3:** Sosyal: link ile paylaşım ve paylaşım kartı, günün gezegeni, hesap sistemi ve bulut kayıt, topluluk galerisi, İngilizce dil desteği (canlı yayın ✓)
 
 Tam tasarım belgesi: [TASARIM.md](TASARIM.md)
 
@@ -139,6 +146,8 @@ Projeyi beğendiysen bir ⭐ vermeyi unutma; daha çok kişinin keşfetmesine ya
 Pick a star, shape your planet with 30+ parameters (distance, water, atmosphere composition, tectonics, magnetic field, rings, moons…) and watch 5 billion years of evolution, from a molten lava world to oceans, microbes, forests and city lights. A simplified but science-based model computes equilibrium temperature, greenhouse effect, liquid-water range, habitability and the Earth Similarity Index.
 
 **Highlights:** procedural terrain baked on the GPU · gas giants with bands and storms · rings with shadows · disasters (asteroid impact, supervolcano, ice age, stellar flare, runaway greenhouse) · missions, badges and an encyclopedia · real planets (Mercury to Kepler-452b) · surface view with a sky showing your rings and moons · photo mode · generative Web Audio music · installable PWA that works offline · mobile and touch friendly.
+
+**Play it now: [https://gezegen-atolyesi.netlify.app](https://gezegen-atolyesi.netlify.app)** (no install, works on phones, offline-capable).
 
 ```bash
 npm install && npm run dev
