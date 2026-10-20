@@ -3042,3 +3042,79 @@ body.surface-mode #viewport {
     margin-left: 0;
   }
 }
+
+/* Yüzey görünümü bilgi kartı */
+.surface-info {
+  position: fixed;
+  left: 16px;
+  top: calc(16px + var(--safe-t));
+  z-index: 30;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  max-width: min(360px, calc(100% - 32px));
+  padding: 12px 14px;
+  border-radius: 16px;
+  animation: fade-in 0.4s ease-out;
+}
+
+body.surface-mode .surface-info:not(:empty) {
+  display: flex;
+}
+
+.surface-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.surface-title strong {
+  display: block;
+  font-size: 1.1em;
+}
+
+.surface-title span:not(.surface-icon) {
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+.surface-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  color: var(--accent);
+}
+
+.surface-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.surface-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--chip);
+  font-size: 0.8em;
+  font-weight: 600;
+}
+
+.surface-hint {
+  color: var(--muted);
+  font-size: 0.76em;
+}
+
+@media (max-width: 760px) {
+  .surface-info {
+    left: 8px;
+    right: 8px;
+    top: calc(8px + var(--safe-t));
+    max-width: none;
+  }
+}

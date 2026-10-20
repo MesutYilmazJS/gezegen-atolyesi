@@ -7,7 +7,7 @@ import { loadProgress, saveProgress } from './game/progress';
 import { REAL_PLANETS, RealPlanetId } from './game/realPlanets';
 import { t } from './i18n';
 import { Engine } from './render/engine';
-import { DISASTERS, PlanetReport, computeReport, sliderToTime } from './sim/physics';
+import { DISASTERS, PlanetReport, computeReport, skyName, sliderToTime } from './sim/physics';
 import { DisasterType, PlanetSettings, defaultSettings, randomSettings } from './state/settings';
 import { loadAlbum, loadCurrent, loadPrefs, Prefs, saveCurrent, savePrefs, saveToAlbum } from './state/storage';
 import {
@@ -423,7 +423,27 @@ function enterSurface() {
   selectTab(null);
   document.body.classList.add('surface-mode');
   sound.play('whoosh');
-  engine.enterSurface(settings, report);
+  const info = $('#surface-info');
+  info.replaceChildren();
+  engine.enterSurface(settings, report).then((biome) => renderSurfaceInfo(info, biome));
+}
+
+/** Yüzeyde sol üstte: nerede olduğumuz ve gökyüzünde neler var */
+function renderSurfaceInfo(el: HTMLElement, biome: keyof typeof t.biomes) {
+  const icons: Record<string, IconName> = { desert: 'sun', ice: 'snowflake', shore: 'droplets', volcanic: 'volcano', forest: 'leaf' };
+  const chips: [IconName, string][] = [
+    ['temp', `${Math.round(report.tAvg - 273.15)} °C`],
+    ['cloud', t.surfaceSky(skyName(report))],
+    ['sun', t.surfaceSuns(settings.binaryStar ? 2 : 1)],
+  ];
+  if (settings.moons > 0) chips.push(['moon', t.surfaceMoons(settings.moons)]);
+  if (settings.rings.enabled) chips.push(['orbit', t.surfaceRings]);
+  if (settings.wind > 0.5) chips.push(['speed', t.surfaceWind(Math.round(20 + settings.wind * settings.wind * 1500))]);
+  el.replaceChildren(
+    h('div', { class: 'surface-title' }, h('span', { class: 'surface-icon' }, icon(icons[biome], 20)), h('div', {}, h('strong', {}, t.biomes[biome]), h('span', {}, settings.name))),
+    h('div', { class: 'surface-chips' }, ...chips.map(([ic, text]) => h('span', { class: 'surface-chip' }, icon(ic, 14), text))),
+    h('div', { class: 'surface-hint' }, t.surfaceDrag),
+  );
 }
 
 function exitSurface() {

@@ -663,7 +663,8 @@ function story(s: PlanetSettings, r: PlanetReport): string {
   return parts.join(' ');
 }
 
-function skyName(r: PlanetReport): string {
+/** Gökyüzünün rengini anlatan kısa ad (ör. "derin mavi") */
+export function skyName(r: PlanetReport): string {
   const names = t.sim.skyNames;
   const [red, g, b] = r.visual.skyColor;
   if (r.pressure < 0.003) return names.black;

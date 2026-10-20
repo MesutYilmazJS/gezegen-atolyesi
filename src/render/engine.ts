@@ -66,6 +66,9 @@ export class Engine {
     this.renderer.toneMappingExposure = 1.05;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.setClearColor(0x02030a);
+    // Gölgeler yalnızca yüzey görünümünde kullanılır (uzay sahnesinde gölge düşüren ışık yok)
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(this.renderer.domElement);
 
     this.camera = new THREE.PerspectiveCamera(40, 1, 0.05, 2000);
@@ -165,7 +168,7 @@ export class Engine {
   /** Yüzey görünümüne geç */
   enterSurface(s: PlanetSettings, report: PlanetReport) {
     this.controls.enabled = false;
-    return this.surface.enter(s, report);
+    return this.surface.enter(s, report, this.quality);
   }
 
   exitSurface() {

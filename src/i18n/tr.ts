@@ -345,6 +345,13 @@ export const tr = {
   surfaceExit: 'Uzaya dön',
   surfaceNoSurface: 'Gaz devinin üzerinde durulacak bir yüzey yok',
   surfaceTooHot: 'Yüzey henüz erimiş halde',
+  surfaceDrag: 'Etrafa bakmak için sürükle',
+  biomes: { desert: 'Çöl', ice: 'Buzul', shore: 'Kıyı', volcanic: 'Volkanik ova', forest: 'Orman' },
+  surfaceSky: (name: string) => `Gökyüzü ${name}`,
+  surfaceSuns: (n: number) => (n === 2 ? 'İki güneş' : 'Bir güneş'),
+  surfaceMoons: (n: number) => `${n} ay`,
+  surfaceRings: 'Halkalar',
+  surfaceWind: (kmh: number) => `Rüzgâr ${kmh} km/sa`,
 
   // Rapor
   habitability: 'Yaşanabilirlik',
